@@ -324,8 +324,9 @@ endif
 
 # Define all object files from source files
 #------------------------------------------------------------------------------------------------
-C_OBJS = $(patsubst %.c, %.o, $(PROJECT_SOURCE_FILES))
-CXX_OBJS = $(patsubst %.cpp, %.o, $(PROJECT_SOURCE_FILES))
+C_OBJS := $(patsubst %.c, %.o, $(PROJECT_SOURCE_FILES))
+CXX_OBJS := $(patsubst %.cpp, %.o, $(PROJECT_SOURCE_FILES))
+OBJS := $(C_OBJS) $(CXX_OBJS)
 
 # Define processes to execute
 #------------------------------------------------------------------------------------------------
@@ -344,11 +345,8 @@ all:
 	$(MAKE) $(MAKEFILE_TARGET)
 
 # Project target defined by PROJECT_NAME
-$(PROJECT_NAME): $(C_OBJS)
-	$(CC) -o $(PROJECT_BUILD_PATH)/$(PROJECT_NAME)$(EXT) $(OBJS) $(CFLAGS) $(INCLUDE_PATHS) $(LDFLAGS) $(LDLIBS) -D$(PLATFORM)
-$(PROJECT_NAME): $(CXX_OBJS)
+$(PROJECT_NAME): $(OBJS)
 	$(CXX) -o $(PROJECT_BUILD_PATH)/$(PROJECT_NAME)$(EXT) $(OBJS) $(CXXFLAGS) $(INCLUDE_PATHS) $(LDFLAGS) $(LDLIBS) -D$(PLATFORM)
-
 
 # Compile source files
 # NOTE: This pattern will compile every module defined on $(OBJS)

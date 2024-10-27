@@ -9,6 +9,12 @@ cpmaddpackage(
         GIT_TAG
         #5.5
         master # use up-to-date branch
+        OPTIONS
+        "BUILD_EXAMPLES OFF"
+        "BUILD_SHARED_LIBS OFF"
+        "SUPPORT_SSH_KEYBOARD_RPI OFF"
+        "SUPPORT_SCREEN_CAPTURE OFF"
+        "SUPPORT_GIF_RECORDING OFF"
 )
 target_compile_options(raylib PRIVATE $<$<C_COMPILER_ID:GNU,Clang>:-Wno-error=implicit-function-declaration>)
 target_compile_options(raylib PRIVATE $<$<C_COMPILER_ID:GNU,Clang>:-Wno-unused-result>)
