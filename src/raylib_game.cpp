@@ -11,16 +11,15 @@
 *
 ********************************************************************************************/
 
-#include "raylib.h"
+#include <raylib.h>
 
 #if defined(PLATFORM_WEB)
     #define CUSTOM_MODAL_DIALOGS            // Force custom modal dialogs usage
     #include <emscripten/emscripten.h>      // Emscripten library - LLVM to JavaScript compiler
 #endif
 
-#include <stdio.h>                          // Required for: printf()
-#include <stdlib.h>                         // Required for: 
-#include <string.h>                         // Required for: 
+#include <string_view>
+#include <array>
 
 //----------------------------------------------------------------------------------
 // Defines and Macros
@@ -37,20 +36,14 @@
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
 //----------------------------------------------------------------------------------
-typedef enum { 
-    SCREEN_LOGO = 0, 
-    SCREEN_TITLE, 
-    SCREEN_GAMEPLAY, 
-    SCREEN_ENDING
-} GameScreen;
 
 // TODO: Define your custom data types here
 
 //----------------------------------------------------------------------------------
 // Global Variables Definition
 //----------------------------------------------------------------------------------
-static const int screenWidth = 800;
-static const int screenHeight = 450;
+inline constexpr int ScreenWidth = 800;
+inline constexpr int ScreenHeight = 450;
 
 static RenderTexture2D target = { 0 };  // Render texture to render our game
 
@@ -59,6 +52,7 @@ static RenderTexture2D target = { 0 };  // Render texture to render our game
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
 //----------------------------------------------------------------------------------
+static void UpdateGameLogic(void);
 static void UpdateDrawFrame(void);      // Update and Draw one frame
 
 //------------------------------------------------------------------------------------
@@ -72,13 +66,13 @@ int main(void)
 
     // Initialization
     //--------------------------------------------------------------------------------------
-    InitWindow(screenWidth, screenHeight, "raylib gamejam template");
+    InitWindow(ScreenWidth, ScreenHeight, "raylib gamejam template");
     
     // TODO: Load resources / Initialize variables at this point
     
     // Render texture to draw full screen, enables screen scaling
     // NOTE: If screen is scaled, mouse input should be scaled proportionally
-    target = LoadRenderTexture(screenWidth, screenHeight);
+    target = LoadRenderTexture(ScreenWidth, ScreenHeight);
     SetTextureFilter(target.texture, TEXTURE_FILTER_BILINEAR);
 
 #if defined(PLATFORM_WEB)
@@ -109,6 +103,11 @@ int main(void)
 //--------------------------------------------------------------------------------------------
 // Module functions definition
 //--------------------------------------------------------------------------------------------
+void UpdateGameLogic(void)
+{
+
+}
+
 // Update and draw frame
 void UpdateDrawFrame(void)
 {
@@ -116,6 +115,7 @@ void UpdateDrawFrame(void)
     //----------------------------------------------------------------------------------
     // TODO: Update variables / Implement example logic at this point
     //----------------------------------------------------------------------------------
+    UpdateGameLogic();
 
     // Draw
     //----------------------------------------------------------------------------------
@@ -126,7 +126,7 @@ void UpdateDrawFrame(void)
         
         // TODO: Draw your game screen here
         DrawText("Welcome to raylib NEXT gamejam!", 150, 140, 30, RAYWHITE);
-        DrawRectangleLinesEx((Rectangle){ 0, 0, screenWidth, screenHeight }, 16, RAYWHITE);
+        DrawRectangleLinesEx((Rectangle){ 0, 0, ScreenWidth, ScreenHeight }, 16, RAYWHITE);
         
     EndTextureMode();
     
