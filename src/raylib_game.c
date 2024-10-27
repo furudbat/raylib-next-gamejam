@@ -122,20 +122,20 @@ void UpdateDrawFrame(void)
     // Render game screen to a texture, 
     // it could be useful for scaling or further shader postprocessing
     BeginTextureMode(target);
-        ClearBackground(RAYWHITE);
+        ClearBackground(BLACK);
         
         // TODO: Draw your game screen here
-        DrawText("Welcome to raylib NEXT gamejam!", 150, 140, 30, BLACK);
-        DrawRectangleLinesEx((Rectangle){ 0, 0, screenWidth, screenHeight }, 16, BLACK);
+        DrawText("Welcome to raylib NEXT gamejam!", 150, 140, 30, RAYWHITE);
+        DrawRectangleLinesEx((Rectangle){ 0, 0, screenWidth, screenHeight }, 16, RAYWHITE);
         
     EndTextureMode();
     
     // Render to screen (main framebuffer)
     BeginDrawing();
-        ClearBackground(RAYWHITE);
+        ClearBackground(BLACK);
         
         // Draw render texture to screen, scaled if required
-        DrawTexturePro(target.texture, (Rectangle){ 0, 0, (float)target.texture.width, -(float)target.texture.height }, (Rectangle){ 0, 0, (float)target.texture.width, (float)target.texture.height }, (Vector2){ 0, 0 }, 0.0f, WHITE);
+        DrawTexturePro(target.texture, (Rectangle){ 0, 0, (float)target.texture.width, -(float)target.texture.height }, (Rectangle){ 0, 0, (float)target.texture.width, (float)target.texture.height }, (Vector2){ 0, 0 }, 0.0f, RAYWHITE);
 
         // TODO: Draw everything that requires to be drawn at this point, maybe UI?
 
