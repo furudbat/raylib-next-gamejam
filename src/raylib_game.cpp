@@ -46,6 +46,7 @@ inline constexpr int ScreenWidth = 800;
 inline constexpr int ScreenHeight = 450;
 
 static RenderTexture2D target = { 0 };  // Render texture to render our game
+static Texture bg = { 0 };
 
 // TODO: Define global variables here, recommended to make them static
 
@@ -75,6 +76,11 @@ int main(void)
     target = LoadRenderTexture(ScreenWidth, ScreenHeight);
     SetTextureFilter(target.texture, TEXTURE_FILTER_BILINEAR);
 
+    // test image loading in web
+    Image bg_img = LoadImage("resources/bg.png");
+    bg = LoadTextureFromImage(bg_img);
+    UnloadImage(bg_img);
+
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(UpdateDrawFrame, 60, 1);
 #else
@@ -91,6 +97,7 @@ int main(void)
     // De-Initialization
     //--------------------------------------------------------------------------------------
     UnloadRenderTexture(target);
+    UnloadTexture(bg);
     
     // TODO: Unload all loaded resources at this point
 
@@ -127,6 +134,8 @@ void UpdateDrawFrame(void)
         // TODO: Draw your game screen here
         DrawText("Welcome to raylib NEXT gamejam!", 150, 140, 30, RAYWHITE);
         DrawRectangleLinesEx((Rectangle){ 0, 0, ScreenWidth, ScreenHeight }, 16, RAYWHITE);
+
+        DrawTexture(bg, 0, 0, WHITE);
         
     EndTextureMode();
     
