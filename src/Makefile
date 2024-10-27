@@ -32,7 +32,7 @@ PLATFORM              ?= PLATFORM_DESKTOP
 PROJECT_NAME          ?= raylib_game
 PROJECT_VERSION       ?= 1.0
 PROJECT_BUILD_PATH    ?= .
-PROJECT_SOURCE_FILES  ?= raylib_game.c
+PROJECT_SOURCE_FILES  ?= raylib_game.cpp
 
 # raylib library variables
 RAYLIB_SRC_PATH       ?= C:/raylib/raylib/src
@@ -324,9 +324,8 @@ endif
 
 # Define all object files from source files
 #------------------------------------------------------------------------------------------------
-C_OBJS := $(patsubst %.c, %.o, $(PROJECT_SOURCE_FILES))
 CXX_OBJS := $(patsubst %.cpp, %.o, $(PROJECT_SOURCE_FILES))
-OBJS := $(C_OBJS) $(CXX_OBJS)
+OBJS := $(CXX_OBJS)
 
 # Define processes to execute
 #------------------------------------------------------------------------------------------------
@@ -352,8 +351,6 @@ $(PROJECT_NAME): $(OBJS)
 # NOTE: This pattern will compile every module defined on $(OBJS)
 %.o: %.cpp
 	$(CXX) -c $< -o $@ $(CXXFLAGS) $(INCLUDE_PATHS) -D$(PLATFORM)
-%.o: %.c
-	$(CC) -c $< -o $@ $(CFLAGS) $(INCLUDE_PATHS) -D$(PLATFORM)
 
 # Clean everything
 clean:

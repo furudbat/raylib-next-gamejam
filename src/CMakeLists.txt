@@ -12,10 +12,20 @@ endif()
 # Web Configurations
 if (${PLATFORM} STREQUAL "Web")
     set_target_properties(raylib_game PROPERTIES SUFFIX ".html") # Tell Emscripten to build an example.html file.
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_GLFW=3 -s FORCE_FILESYSTEM=1")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_GLFW=3 -s FORCE_FILESYSTEM=1 -s WASM=1")
 
-    target_link_options(raylib_game PUBLIC "--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/resources@/resources")
-    target_link_options(raylib_game PUBLIC "--shell-file ${CMAKE_CURRENT_SOURCE_DIR}/minshell.html")
+    set(web_link_flags)
+    if(CMAKE_BUILD_TYPE MATCHES Debug OR CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
+        set(web_link_flags "${web_link_flags} -s ASSERTIONS=1")
+    endif()
+    if(CMAKE_BUILD_TYPE MATCHES Debug)
+        set(web_link_flags "${web_link_flags} --profiling")
+        set(web_link_flags "${web_link_flags} --source-map-base")
+    endif()
+    set(web_link_flags "${web_link_flags} --preload-file ${CMAKE_CURRENT_SOURCE_DIR}/resources@resources --use-preload-plugins")
+    set(web_link_flags "${web_link_flags} --shell-file ${CMAKE_CURRENT_SOURCE_DIR}/minshell.html")
+
+    set_target_properties(raylib_game PROPERTIES LINK_FLAGS "${web_link_flags}")
 endif()
 
 # Checks if OSX and links appropriate frameworks (only required on MacOS)
