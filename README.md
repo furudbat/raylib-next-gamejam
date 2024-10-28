@@ -40,26 +40,37 @@ _Copyright (c) 2022-2024 Ramon Santamaria ([@raysan5](https://twitter.com/raysan
 
 -----------------------------------
 
-## $(Game Title)
+## Neuron Control
 
-![$(Game Title)](screenshots/screenshot000.png "$(Game Title)")
+![Neuron Control](screenshots/screenshot000.png "Neuron Control")
+
+_Entry for raylib NEXT gamejam, theme: **connections**_
 
 ### Description
 
-$(Your Project Description)
+Link controls and actions so your character is able to move.
+Use your connected controls to move the characters and exit the level.
 
 ### Features
 
- - $(Project Feature 01)
- - $(Project Feature 02)
- - $(Project Feature 03)
+ - customize your key-binds in a new way
+ - chain actions
+ - move the character with your customized key-binds
+ - ~~collect key to open door~~
+ - ~~walls and obstetrical in the node selection~~
 
 ### Controls
 
 Keyboard/Mouse:
- - $(Project Controls 01)
- - $(Project Controls 02)
- - $(Project Controls 03)
+ - click on one Node to select an Action/Key and click on another Node (Action)
+   - left-click to connect nodes
+   - right-click to remove connections
+ - use the connected key-binds to move the character, possible keys:
+   - W
+   - A
+   - S
+   - D
+   - (Space)
 
 ### Screenshots
 
