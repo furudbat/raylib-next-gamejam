@@ -21,17 +21,20 @@
 #include <string_view>
 #include <array>
 #include <chrono>
+#include <cassert>
 
 //----------------------------------------------------------------------------------
 // Defines and Macros
 //----------------------------------------------------------------------------------
 // Simple log system to avoid printf() calls if required
 // NOTE: Avoiding those calls, also avoids const strings memory usage
+#if defined(PLATFORM_WEB)
 #define SUPPORT_LOG_INFO
 #if defined(SUPPORT_LOG_INFO)
     #define LOG(...) printf(__VA_ARGS__)
 #else
     #define LOG(...)
+#endif
 #endif
 
 //----------------------------------------------------------------------------------
@@ -86,13 +89,29 @@ enum class ConnectorKey : int
     D = KEY_D,
     Space = KEY_SPACE,
 };
+
+inline constexpr int MaxNodeConnections = 2;
+inline constexpr int MaxIndirectConnections = 2;
 struct ConnectorNode {
+    int index{-1};
     Vector2 position{0, 0};
     ConnectorAction action{ConnectorAction::NONE};
     ConnectorKey key{ConnectorKey::NONE};
     ConnectorType type{ConnectorType::DISABLED};
-    bool is_connected{false};
+    int connected_counter{0};
     bool is_selected{false};
+    std::array<int, MaxNodeConnections> direct_connections{};
+
+    // computed
+    std::array<ConnectorNode*, MaxIndirectConnections> connected_nodes{};
+    std::vector<ConnectorAction> connected_actions{};
+
+    ConnectorNode()
+    {
+        direct_connections.fill(-1);
+        connected_nodes.fill(nullptr);
+        connected_actions.reserve(MaxIndirectConnections);
+    }
 };
 struct GameContext
 {
@@ -103,6 +122,16 @@ struct GameContext
     std::chrono::milliseconds start_cooldown {StartCooldown};
     std::chrono::milliseconds timer {std::chrono::milliseconds::zero()};
     std::chrono::milliseconds start_time{std::chrono::milliseconds::zero()};
+
+    void clearNodes ()
+    {
+        assert(nodes.size() <= std::numeric_limits<int>::max());
+        for (size_t i = 0; i < nodes.size(); ++i)
+        {
+            nodes[i] = {};
+            nodes[i].index = i;
+        }
+    }
 };
 constexpr void setActionNode(ConnectorNode& node, Vector2 pos, ConnectorAction action)
 {
@@ -122,6 +151,7 @@ constexpr void setKeyNode(ConnectorNode& node, Vector2 pos, ConnectorKey key)
 }
 constexpr void clearKeyNode(ConnectorNode& node)
 {
+    //node.index = -1;
     node.position = {0, 0};
     node.action = ConnectorAction::NONE;
     node.key = ConnectorKey::NONE;
@@ -151,8 +181,16 @@ static void UpdateDrawFrame();      // Update and Draw one frame
 //------------------------------------------------------------------------------------
 int main()
 {
+#if !defined(PLATFORM_WEB)
+#ifndef NDEBUG
+    SetTraceLogLevel(LOG_DEBUG);
+#else
 #if !defined(_DEBUG)
     SetTraceLogLevel(LOG_NONE);         // Disable raylib trace log messages
+#endif
+#endif
+#else
+    SetTraceLogLevel(LOG_NONE);
 #endif
 
     // Initialization
@@ -196,6 +234,7 @@ static void UpdateStart()
         game_context.start_time = std::chrono::duration_cast<std::chrono::milliseconds>(fsec{GetTime()});
         game_context.state = GameState::Main;
 
+        game_context.clearNodes();
         setActionNode(game_context.nodes[0], {60, 44}, ConnectorAction::MovementRight);
         setKeyNode(game_context.nodes[1], {204, 70}, ConnectorKey::D);
         setActionNode(game_context.nodes[2], {68, 386}, ConnectorAction::MovementUp);
@@ -205,6 +244,12 @@ static void UpdateStart()
     }
     game_context.start_cooldown -= game_context.delta;
 }
+
+static void linkNodes(int node_selected1, int node_selected2);
+[[nodiscard]] static bool validConnection(int node_selected1, int node_selected2);
+static void unlinkNode(ConnectorNode& node);
+static void updateCountConnectedNode(ConnectorNode& node);
+static void updateNodeConnections(ConnectorNode& node);
 static void UpdateMain()
 {
     // end goal
@@ -220,11 +265,242 @@ static void UpdateMain()
         {
             if (node.type != ConnectorType::DISABLED)
             {
-                node.is_selected = CheckCollisionCircleRec(node.position, 16, {mouse.x, mouse.y, 8, 8});
+                if(CheckCollisionCircleRec(node.position, 16, {mouse.x, mouse.y, 8, 8}))
+                {
+                    node.is_selected = true;
+                }
+            }
+        }
+        int node_selected1 = -1;
+        int node_selected2 = -1;
+        for (size_t i = 0; i < game_context.nodes.size(); ++i)
+        {
+            if (game_context.nodes[i].is_selected)
+            {
+                node_selected1 = i;
+                break;
+            }
+        }
+        for (size_t i = 0; i < game_context.nodes.size(); ++i)
+        {
+            if (i != node_selected1 && game_context.nodes[i].is_selected)
+            {
+                node_selected2 = i;
+                break;
+            }
+        }
+        if (node_selected1 != -1 && node_selected2 != -1)
+        {
+            linkNodes(node_selected1, node_selected2);
+            game_context.nodes[node_selected1].is_selected = false;
+            game_context.nodes[node_selected2].is_selected = false;
+        }
+    }
+    else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+    {
+        const auto mouse = GetMousePosition();
+        for (size_t i = 0; i < game_context.nodes.size(); ++i)
+        {
+            auto& node = game_context.nodes[i];
+            if (node.type != ConnectorType::DISABLED)
+            {
+                if(CheckCollisionCircleRec(node.position, 16, {mouse.x, mouse.y, 8, 8}))
+                {
+                    unlinkNode(node);
+                }
             }
         }
     }
 }
+
+void linkNodes(int node_selected1, int node_selected2)
+{
+    /// @TODO: validate connection
+    if (validConnection(node_selected1, node_selected2))
+    {
+        for (auto& connected_node : game_context.nodes[node_selected1].direct_connections)
+        {
+            if (connected_node == -1)
+            {
+                connected_node = node_selected2;
+                break;
+            }
+        }
+        for (auto& connected_node : game_context.nodes[node_selected2].direct_connections)
+        {
+            if (connected_node == -1)
+            {
+                connected_node = node_selected1;
+                break;;
+            }
+        }
+        /// @TODO: optimize count with `game_context.nodes[node_selected1].connected_counter++` ???
+        updateCountConnectedNode(game_context.nodes[node_selected1]);
+        updateCountConnectedNode(game_context.nodes[node_selected2]);
+    }
+}
+bool validConnection(int node_selected1, int node_selected2)
+{
+    if (node_selected1 != -1 && node_selected2 != -1)
+    {
+        if (game_context.nodes[node_selected1].type != game_context.nodes[node_selected2].type ||
+            (game_context.nodes[node_selected1].type == ConnectorType::Action && game_context.nodes[node_selected2].type == ConnectorType::Action))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+void unlinkNode(ConnectorNode& node)
+{
+    // unlink inner connections
+    for (auto& connected_node_index : node.direct_connections)
+    {
+        if (connected_node_index != -1)
+        {
+            for (auto& sibling_connected_node_index : game_context.nodes[connected_node_index].direct_connections)
+            {
+                if (node.index == sibling_connected_node_index)
+                {
+                    sibling_connected_node_index = -1;
+                }
+            }
+            node.direct_connections.fill(-1);
+        }
+    }
+    // check for all other nodes
+    for (size_t j = 0; j < game_context.nodes.size(); ++j)
+    {
+        auto& other_node = game_context.nodes[j];
+        if (node.index != j && other_node.type != ConnectorType::DISABLED)
+        {
+            // unlink outer connections
+            for (auto& connected_node_index : other_node.direct_connections)
+            {
+                if (connected_node_index != -1)
+                {
+                    for (auto& sibling_connected_node_index : game_context.nodes[connected_node_index].direct_connections)
+                    {
+                        if (node.index == sibling_connected_node_index)
+                        {
+                            sibling_connected_node_index = -1;
+                        }
+                    }
+                    if (connected_node_index == node.index)
+                    {
+                        connected_node_index = -1;
+                    }
+                }
+            }
+        }
+    }
+    updateCountConnectedNode(node);
+}
+void updateCountConnectedNode(ConnectorNode& node)
+{
+    node.connected_counter = 0;
+    for (size_t i = 0; i < game_context.nodes.size(); ++i)
+    {
+        if (i != node.index)
+        {
+            for (const auto& connected_node : game_context.nodes[i].direct_connections)
+            {
+                if (connected_node == node.index)
+                {
+                    node.connected_counter++;
+                }
+            }
+        }
+    }
+    updateNodeConnections(node);
+}
+void updateNodeConnections(ConnectorNode& node)
+{
+    const auto getFreeConnectedNode = [&]() -> ConnectorNode**
+    {
+        for (auto& connection : node.connected_nodes)
+        {
+            if (connection == nullptr)
+            {
+                return &connection;
+            }
+        }
+        return nullptr;
+    };
+    const auto addConnection = [&](int root_node_index, int search_node_index, const std::array<int, MaxNodeConnections>& direct_connections)
+    {
+        if (search_node_index != -1)
+        {
+            for (const auto& direct_connected_node_index : direct_connections)
+            {
+                if (direct_connected_node_index == search_node_index && direct_connected_node_index != root_node_index)
+                {
+                    if (auto** connection = getFreeConnectedNode(); connection != nullptr)
+                    {
+                        *connection = &game_context.nodes[direct_connected_node_index];
+                    }
+                }
+            }
+        }
+    };
+
+    node.connected_nodes.fill(nullptr);
+    for (size_t i = 0; i < game_context.nodes.size(); ++i)
+    {
+        if (node.type != ConnectorType::DISABLED && node.index != i)
+        {
+            // check direct connect with the other node
+            addConnection(node.index, node.index, game_context.nodes[i].direct_connections);
+            /// @TODO: use recursion, for going deeper in the graph
+            for (auto connected_node_index : node.direct_connections)
+            {
+                if (node.index != connected_node_index && connected_node_index != -1)
+                {
+                    addConnection(node.index, connected_node_index, game_context.nodes[connected_node_index].direct_connections);
+                    /*
+                    for (auto inner_connected_node_index_1 : game_context.nodes[connected_node_index].connections)
+                    {
+                        if (i != inner_connected_node_index_1 && inner_connected_node_index_1 != -1)
+                        {
+                            addConnection(connected_node_index, game_context.nodes[inner_connected_node_index_1].connections);
+                            for (auto inner_connected_node_index_2 : game_context.nodes[inner_connected_node_index_1].connections)
+                            {
+                                if (i != inner_connected_node_index_2 && inner_connected_node_index_2 != -1)
+                                {
+                                    addConnection(inner_connected_node_index_1, game_context.nodes[inner_connected_node_index_2].connections);
+                                }
+                            }
+                        }
+                    }
+                    */
+                }
+            }
+        }
+    }
+
+    // update actions
+    node.connected_actions.clear();
+    for(const auto& connected_node : node.connected_nodes)
+    {
+        if (connected_node != nullptr && connected_node->index != node.index)
+        {
+            if (connected_node->type == ConnectorType::Action)
+            {
+                node.connected_actions.push_back(connected_node->action);
+            }
+        }
+    }
+
+    // debug
+    {
+        TraceLog(LOG_DEBUG, "node %d -> ", node.index);
+        for(const auto& connection : node.connected_nodes)
+        {
+            TraceLog(LOG_DEBUG, " %d", connection);
+        }
+    }
+}
+
 static void UpdateEnd()
 {
     if (IsKeyPressed(KEY_ENTER))
@@ -254,10 +530,21 @@ void UpdateGameLogic() {
 
 void RenderNode(const ConnectorNode& node)
 {
-    constexpr int FontSize = 12;
+    // render Connection
+    for (auto direct_connected_node_index : node.direct_connections)
+    {
+        if (direct_connected_node_index != -1)
+        {
+            const auto& sibling_connected = game_context.nodes[direct_connected_node_index];
+            DrawLineV(node.position, sibling_connected.position, ColorPalette[5]);
+        }
+    }
 
+    // render Node
+    constexpr int FontSize = 12;
     const char* innerTextAction = [&]()
     {
+        return TextFormat("%i", node.index);
         switch (node.action)
         {
         case ConnectorAction::NONE:
@@ -279,6 +566,7 @@ void RenderNode(const ConnectorNode& node)
 
     const char* innerTextKey = [&]()
     {
+        return TextFormat("%i", node.index);
         switch (node.key)
         {
         case ConnectorKey::NONE:
@@ -305,9 +593,9 @@ void RenderNode(const ConnectorNode& node)
     case ConnectorType::Action:
         if (node.is_selected)
         {
-            DrawPolyLines(node.position, 6, 16, 0, RED);
+            DrawPoly(node.position, 6, 16, 0, ColorPalette[1]);
         } else {
-            DrawPolyLines(node.position, 6, 16, 0, ColorPalette[4]);
+            DrawPolyLines(node.position, 6, 16, 0, ColorPalette[1]);
         }
         switch (node.action)
         {
@@ -318,12 +606,24 @@ void RenderNode(const ConnectorNode& node)
         case ConnectorAction::MovementUp:
         case ConnectorAction::MovementDown:
         case ConnectorAction::Jump:
+        if (node.is_selected)
+        {
+            DrawText(innerTextAction, node.position.x - innerTextActionSize.x/2, node.position.y - innerTextActionSize.y/2, FontSize, ColorPalette[0]);
+        } else
+        {
             DrawText(innerTextAction, node.position.x - innerTextActionSize.x/2, node.position.y - innerTextActionSize.y/2, FontSize, ColorPalette[1]);
+        }
             break;
         }
         break;
     case ConnectorType::Key:
-        DrawCircleLines(node.position.x, node.position.y, 16, ColorPalette[4]);
+        if (node.is_selected)
+        {
+            DrawCircle(node.position.x, node.position.y, 16, ColorPalette[4]);
+        } else
+        {
+            DrawCircleLines(node.position.x, node.position.y, 16, ColorPalette[4]);
+        }
         switch (node.key)
         {
         case ConnectorKey::NONE:
@@ -333,7 +633,13 @@ void RenderNode(const ConnectorNode& node)
         case ConnectorKey::S:
         case ConnectorKey::D:
         case ConnectorKey::Space:
-            DrawText(innerTextKey, node.position.x - innerTextKeySize.x/2, node.position.y - innerTextKeySize.y/2, 14, ColorPalette[4]);
+            if (node.is_selected)
+            {
+                DrawText(innerTextKey, node.position.x - innerTextKeySize.x/2, node.position.y - innerTextKeySize.y/2, 14, ColorPalette[0]);
+            } else
+            {
+                DrawText(innerTextKey, node.position.x - innerTextKeySize.x/2, node.position.y - innerTextKeySize.y/2, 14, ColorPalette[4]);
+            }
             break;
         }
         break;
@@ -353,7 +659,7 @@ void UpdateDrawFrame()
     //----------------------------------------------------------------------------------
     // Render to screen (main framebuffer)
     BeginDrawing();
-        ClearBackground(BLACK);
+        ClearBackground(ColorPalette[0]);
 
         // @TODO: move text out
         constexpr const char* TitleText = "Title";
