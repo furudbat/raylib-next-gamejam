@@ -42,11 +42,13 @@ _Copyright (c) 2022-2024 Ramon Santamaria ([@raysan5](https://twitter.com/raysan
 
 ## NeuroCiruit
 
-![NeuroCiruit](screenshots/screenshot000.png "NeuroCiruit")
+![NeuroCiruit](img/banner.png "NeuroCiruit")
 
 _Entry for raylib NEXT gamejam, theme: **connections**_
 
 ### Description
+
+**NeuroCiruit** is a simple puzzle-game, you need to connect Nodes.
 
 Link controls and actions so your character is able to move.
 Use your connected controls to move the characters and exit the level.
@@ -58,12 +60,17 @@ Use your connected controls to move the characters and exit the level.
  - move the character with your customized key-binds
  - ~~collect key to open door~~
  - ~~walls and obstetrical in the node selection~~
+ - 4 Levels
  - **Rules**
    - [x] Only connect Action with Keys or Action with other Actions
    - [x] Crossing (connection) lines with other lines not allowed
    - [x] Crossing (connection) lines with nodes not allowed
    - [x] Action can only connect with one Key
    - [x] Action can only have one direct connection with one Key
+ - ~~show more help in-game~~
+ - ~~timer and score~~
+
+Didn't finish all the features in time, but at least it works :)
 
 ### Controls
 
@@ -90,6 +97,33 @@ _TODO: Show your game to the world, animated GIFs recommended!._
 ### Links
 
  - itch.io Release: $(itch.io Game Page)
+
+### Build
+
+Made for Desktop and Web.
+
+#### Configure
+
+C++-Compiler (min. C++20) and cmake required.
+
+```bash
+cmake -G Ninja -S . -B build
+```
+
+#### Configure for Web
+
+emscripten and cmake needed, see [Install emscripten toolchain](https://github.com/raysan5/raylib/wiki/Working-for-Web-(HTML5)#1-install-emscripten-toolchain).
+
+```bash
+cmake -DCMAKE_C_COMPILER=emcc -DCMAKE_CXX_COMPILER=em++ -DPLATFORM=Web -DCMAKE_BUILD_TYPE=MinSizeRel -G Ninja -S build-web
+```
+_(tested on arch linux with [emscripten](https://archlinux.org/packages/extra/x86_64/emscripten/) installed)_
+
+#### Build
+
+```bash
+cmake --build build-web --target raylib_game
+```
 
 ### License
 

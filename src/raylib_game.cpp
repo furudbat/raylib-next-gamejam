@@ -51,6 +51,9 @@
 struct GameContext
 {
     // textures
+    Texture2D logo_texture{0};
+    Texture2D instruction1_texture{0};
+    Texture2D instruction2_texture{0};
     Texture2D tileset_texture{0};
     Texture2D character_sprite_sheet_texture{0};
     Texture2D icons_sprite_sheet_texture{0};
@@ -109,7 +112,7 @@ static GameContext game_context;
 static void UpdateGameLogic();
 static void UpdateDrawFrame();      // Update and Draw one frame
 
-
+/// utils
 constexpr const char* WHITESPACE = " \n\r\t\f\v";
 std::string ltrim(std::string_view s)
 {
@@ -145,7 +148,10 @@ int main()
     // Initialization
     //--------------------------------------------------------------------------------------
     InitWindow(ScreenWidth, ScreenHeight, "Neuron Controls - raylib NEXT gamejam 2024");
-    
+
+    game_context.logo_texture = LoadTexture("resources/logo.png");
+    game_context.instruction1_texture = LoadTexture("resources/instruction1.png");
+    game_context.instruction2_texture = LoadTexture("resources/instruction2.png");
     game_context.tileset_texture = LoadTexture("resources/tileset.png");
     game_context.character_sprite_sheet_texture = LoadTexture("resources/character.png");
     game_context.icons_sprite_sheet_texture = LoadTexture("resources/icons.png");
@@ -165,7 +171,10 @@ int main()
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    
+
+    UnloadTexture(game_context.logo_texture);
+    UnloadTexture(game_context.instruction1_texture);
+    UnloadTexture(game_context.instruction2_texture);
     UnloadTexture(game_context.tileset_texture);
     UnloadTexture(game_context.character_sprite_sheet_texture);
     UnloadTexture(game_context.icons_sprite_sheet_texture);
@@ -233,12 +242,6 @@ static void SetLevel(int level)
     UpdateAllNodes();
 
     game_context.level_helper_text = TextFormat(LevelsHelperFormat, game_context.level);
-}
-static void UpdateStart()
-{
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionRecs(StartButtonRect, game_context.mouse)) {
-        SetLevel(StartLevel);
-    }
 }
 
 
@@ -353,9 +356,10 @@ static void UpdateNodesMain()
         UpdateAllNodes();
     }
 
-    const auto mouse = GetMousePosition();
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionRecs(StartMainCharacterButtonRect, game_context.mouse)) {
+    if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionRecs(StartMainCharacterButtonRect, game_context.mouse)) ||
+        IsKeyPressed(KEY_ENTER)) {
         game_context.state = GameState::CharacterMain;
+        game_context.left_helper_text = TextFormat(LeftHelperCharacterTextFormat);
         return;
     }
 }
@@ -526,57 +530,6 @@ bool validPostConnections(int node_selected1, int node_selected2)
             }
         }
     }
-
-    // check cross connections ... @TODO: more perf. way to check nodes connected with other codes
-    /*
-    for (const auto& node1 : game_context.nodes)
-    {
-        for (const auto& node1_connected_node_index : node1.connected_nodes)
-        {
-            if (node1.index == node1_connected_node_index)
-            {
-                continue;
-            }
-
-            const auto& node1_connected_node = game_context.nodes[node1_connected_node_index];
-            for (const auto& node2 : game_context.nodes)
-            {
-                if (node1.index != node2.index) // not self
-                {
-                    for (const auto& node2_connected_node_index : node2.connected_nodes)
-                    {
-                        if (node2.index == node2_connected_node_index || node1_connected_node_index == node2_connected_node_index)
-                        {
-                            continue;
-                        }
-
-                        const auto& node2_connected_node = game_context.nodes[node2_connected_node_index];
-
-                        Vector2 startPos1 = node1.data.position;
-                        Vector2 endPos1 = node1_connected_node.data.position;
-
-                        Vector2 startPos2 = node2.data.position;
-                        Vector2 endPos2 = node2_connected_node.data.position;
-
-                        /// @NOTE(workaround): use  startPos and endPos must be different (ignore drawing lines from the same node in different directions)
-                        if (Vector2Equals(startPos1, startPos2) != 0 || Vector2Equals(startPos1, endPos2) != 0)
-                        {
-                            continue;
-                        } else if (Vector2Equals(endPos1, startPos2) != 0 || Vector2Equals(endPos1, endPos2) != 0)
-                        {
-                            continue;
-                        }
-
-                        if (CheckCollisionLines(startPos1, endPos1, startPos2, endPos2, nullptr))
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    */
 
     // check connection crossing with nodes
     for (const auto& node1 : game_context.nodes)
@@ -938,7 +891,7 @@ static void PlayerDie()
 }
 static void UpdateCharacterMain()
 {
-    const auto mouse = GetMousePosition();
+    // reset button
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionRecs(ResetMainCharacterButtonRect, game_context.mouse)) {
         game_context.state = GameState::NodesMain;
         switch (game_context.level)
@@ -950,6 +903,7 @@ static void UpdateCharacterMain()
             game_context.player_action_index = -1;
             break;
         }
+        UpdateAllNodes();
         return;
     }
 
@@ -1052,15 +1006,21 @@ static void UpdateCharacterMain()
 }
 
 
+static void UpdateStart()
+{
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionRecs(StartButtonRect, game_context.mouse) || IsKeyPressed(KEY_ENTER)) {
+        SetLevel(StartLevel);
+    }
+}
 static void UpdateEnd()
 {
-    // restart
-    if (IsKeyPressed(KEY_ENTER))
-    {
-        game_context = {};
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionRecs(StartButtonRect, game_context.mouse) || IsKeyPressed(KEY_ENTER)) {
+        // restart
+        game_context.player_current_key = ConnectorKey::NONE;
+        game_context.player_action_index = -1;
+        game_context.player_tiles_position = game_context.player_start_tiles_position;
         game_context.state = GameState::Start;
         SetLevel(StartLevel);
-        return;
     }
 }
 
@@ -1276,7 +1236,7 @@ void RenderMap()
                 DrawTexturePro(game_context.tileset_texture,
                     { sx, sy, LevelTilesetWidth, LevelTilesetHeight },
                     { dx, dy, LevelTilesetWidth, LevelTilesetHeight},
-                    {0, 0}, 0, WHITE);
+                    {0, 0}, 0, NeutralTintColor);
             }
         }
 
@@ -1284,7 +1244,7 @@ void RenderMap()
         DrawTexturePro(game_context.character_sprite_sheet_texture,
             { static_cast<float>(static_cast<int>(game_context.player_direction)*CharacterSpriteWidth), 0, CharacterSpriteWidth, CharacterSpriteHeight },
             { LevelMapArea.x + game_context.player_tiles_position.x * LevelTilesetWidth, LevelMapArea.y + game_context.player_tiles_position.y * LevelTilesetHeight, CharacterSpriteWidth, CharacterSpriteHeight},
-            {0, 0}, 0, WHITE);
+            {0, 0}, 0, NeutralTintColor);
     }
 
     // border
@@ -1313,19 +1273,24 @@ void UpdateDrawFrame()
 
         if (game_context.state == GameState::Start)
         {
-            // show welcome text
-            const auto titleTextSize = MeasureTextEx(GetFontDefault(), TitleText, TitleTextFontSize, TitleTextFontSize/10);
-            DrawText(TitleText, ConnectorArea.x + ConnectorArea.width/2 - titleTextSize.x/2, ConnectorArea.y + 72, TitleTextFontSize, TextFontColor);
-            const auto subTitleTextSize = MeasureTextEx(GetFontDefault(), SubTitleText, SubTitleTextFontSize, SubTitleTextFontSize/10);
-            DrawText(SubTitleText, ConnectorArea.x + ConnectorArea.width/2 - titleTextSize.x/2, ConnectorArea.y + 72 + titleTextSize.y + 4, SubTitleTextFontSize, DisabledColor);
+            // title
+            //const auto titleTextSize = MeasureTextEx(GetFontDefault(), TitleText, TitleTextFontSize, TitleTextFontSize/10);
+            //DrawText(TitleText, ConnectorArea.x + ConnectorArea.width/2 - titleTextSize.x/2, ConnectorArea.y + 72, TitleTextFontSize, TextFontColor);
+            //const auto subTitleTextSize = MeasureTextEx(GetFontDefault(), SubTitleText, SubTitleTextFontSize, SubTitleTextFontSize/10);
+            //DrawText(SubTitleText, ConnectorArea.x + ConnectorArea.width/2 - titleTextSize.x/2, ConnectorArea.y + 72 + titleTextSize.y + 4, SubTitleTextFontSize, DisabledColor);
+            DrawTexture(game_context.logo_texture, ConnectorArea.x + ConnectorArea.width/2 - game_context.logo_texture.width/2, ConnectorArea.y + 72, NeutralTintColor);
 
+            // show welcome text
             const auto welcomeTextSize = MeasureTextEx(GetFontDefault(), WelcomeText, WelcomeTextFontSize, WelcomeTextFontSize/10);
-            DrawText(WelcomeText, LevelArea.x + LevelArea.width/2 - welcomeTextSize.x/2, LevelArea.y + 72, WelcomeTextFontSize, TextFontColor);
+            DrawText(WelcomeText, LevelArea.x + LevelArea.width/2 - welcomeTextSize.x/2, LevelArea.y + 60, WelcomeTextFontSize, TextFontColor);
 
             const auto startButtonTextSize = MeasureTextEx(GetFontDefault(), WelcomeStartButtonText, StartButtonTextFontSize, StartButtonTextFontSize/10);
             const auto startButtonColor = (CheckCollisionRecs(StartButtonRect, game_context.mouse)) ? ButtonHoverColor : ButtonColor;
             DrawRectangleLinesEx(StartButtonRect, ButtonLineThick, startButtonColor);
             DrawText(WelcomeStartButtonText, StartButtonRect.x + StartButtonRect.width/2 - startButtonTextSize.x/2, StartButtonRect.y + StartButtonRect.height/2 - startButtonTextSize.y/2, StartButtonTextFontSize, startButtonColor);
+
+            DrawTexture(game_context.instruction1_texture, HelpInstruction1Area.x, HelpInstruction1Area.y, NeutralTintColor);
+            DrawTexture(game_context.instruction2_texture, HelpInstruction2Area.x, HelpInstruction2Area.y, NeutralTintColor);
         }
         else if (game_context.state == GameState::NodesMain || game_context.state == GameState::CharacterMain)
         {
@@ -1381,6 +1346,24 @@ void UpdateDrawFrame()
 
 
             RenderMap();
+        }
+        else if (game_context.state == GameState::End)
+        {
+            // title
+            //const auto titleTextSize = MeasureTextEx(GetFontDefault(), TitleText, TitleTextFontSize, TitleTextFontSize/10);
+            //DrawText(TitleText, ConnectorArea.x + ConnectorArea.width/2 - titleTextSize.x/2, ConnectorArea.y + 72, TitleTextFontSize, TextFontColor);
+            //const auto subTitleTextSize = MeasureTextEx(GetFontDefault(), SubTitleText, SubTitleTextFontSize, SubTitleTextFontSize/10);
+            //DrawText(SubTitleText, ConnectorArea.x + ConnectorArea.width/2 - titleTextSize.x/2, ConnectorArea.y + 72 + titleTextSize.y + 4, SubTitleTextFontSize, DisabledColor);
+            DrawTexture(game_context.logo_texture, ConnectorArea.x + ConnectorArea.width/2 - game_context.logo_texture.width/2, ConnectorArea.y + 72, NeutralTintColor);
+
+            // show welcome text
+            const auto endTextSize = MeasureTextEx(GetFontDefault(), EndText, EndTextFontSize, EndTextFontSize/10);
+            DrawText(EndText, LevelArea.x + LevelArea.width/2 - endTextSize.x/2, LevelArea.y + 64, EndTextFontSize, TextFontColor);
+
+            const auto startButtonTextSize = MeasureTextEx(GetFontDefault(), EndStartButtonText, StartButtonTextFontSize, StartButtonTextFontSize/10);
+            const auto startButtonColor = (CheckCollisionRecs(StartButtonRect, game_context.mouse)) ? ButtonHoverColor : ButtonColor;
+            DrawRectangleLinesEx(StartButtonRect, ButtonLineThick, startButtonColor);
+            DrawText(EndStartButtonText, StartButtonRect.x + StartButtonRect.width/2 - startButtonTextSize.x/2, StartButtonRect.y + StartButtonRect.height/2 - startButtonTextSize.y/2, StartButtonTextFontSize, startButtonColor);
         }
 
     EndDrawing();
