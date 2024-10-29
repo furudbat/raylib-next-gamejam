@@ -53,6 +53,7 @@ struct GameContext
     // textures
     Texture2D tileset_texture{0};
     Texture2D character_sprite_sheet_texture{0};
+    Texture2D icons_sprite_sheet_texture{0};
     std::chrono::milliseconds delta{std::chrono::milliseconds::zero()};
 
     // scene data
@@ -80,6 +81,7 @@ struct GameContext
     // computed
     std::unordered_map<ConnectorKey, std::vector<ConnectorAction>> key_binds;
     std::string left_helper_text{};
+    std::string level_helper_text{};
     std::string right_helper_text{};
     bool node_selection_mode{false};
 
@@ -87,6 +89,7 @@ struct GameContext
     {
         key_binds.reserve(5*MaxNodeConnections);
         left_helper_text.reserve(24*4);
+        level_helper_text.reserve(24);
         right_helper_text.reserve(24*4);
     }
 };
@@ -145,6 +148,7 @@ int main()
     
     game_context.tileset_texture = LoadTexture("resources/tileset.png");
     game_context.character_sprite_sheet_texture = LoadTexture("resources/character.png");
+    game_context.icons_sprite_sheet_texture = LoadTexture("resources/icons.png");
 
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(UpdateDrawFrame, 60, 1);
@@ -164,6 +168,7 @@ int main()
     
     UnloadTexture(game_context.tileset_texture);
     UnloadTexture(game_context.character_sprite_sheet_texture);
+    UnloadTexture(game_context.icons_sprite_sheet_texture);
 
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
@@ -226,6 +231,8 @@ static void SetLevel(int level)
         default: TraceLog(LOG_ERROR, "Error Not Found: %i", game_context.level);
     }
     UpdateAllNodes();
+
+    game_context.level_helper_text = TextFormat(LevelsHelperFormat, game_context.level);
 }
 static void UpdateStart()
 {
@@ -924,10 +931,10 @@ static void NextLevel()
 }
 static void PlayerDie()
 {
-    game_context.state = GameState::NodesMain;
     game_context.player_current_key = ConnectorKey::NONE;
     game_context.player_action_index = -1;
     game_context.player_tiles_position = game_context.player_start_tiles_position;
+    //game_context.state = GameState::NodesMain;
 }
 static void UpdateCharacterMain()
 {
@@ -1159,13 +1166,27 @@ void RenderNode(const ConnectorNode& node)
             case ConnectorAction::MovementUp:
             case ConnectorAction::MovementDown:
             case ConnectorAction::Jump:
-            if (node.is_selected)
-            {
-                DrawText(innerTextAction, node.data.position.x - innerTextActionSize.x/2, node.data.position.y - innerTextActionSize.y/2, NodeFontSize, BackgroundColor);
-            } else
-            {
-                DrawText(innerTextAction, node.data.position.x - innerTextActionSize.x/2, node.data.position.y - innerTextActionSize.y/2, NodeFontSize, actionColor);
-            }
+#if !defined(PLATFORM_WEB)
+#ifndef NDEBUG
+                if (IsKeyDown(KEY_F1))
+                {
+                    if (node.is_selected)
+                    {
+                        DrawText(innerTextAction, node.data.position.x - innerTextActionSize.x/2, node.data.position.y - innerTextActionSize.y/2, NodeFontSize, BackgroundColor);
+                    } else
+                    {
+                        DrawText(innerTextAction, node.data.position.x - innerTextActionSize.x/2, node.data.position.y - innerTextActionSize.y/2, NodeFontSize, actionColor);
+                    }
+                    break;
+                }
+#endif
+#endif
+                // Render Action Icon
+                auto iconColor = node.is_selected ? BackgroundColor : actionColor;
+                DrawTexturePro(game_context.icons_sprite_sheet_texture,
+                    { static_cast<float>(static_cast<int>(node.data.action)*ActionIconSpriteWidth), 0, ActionIconSpriteWidth, ActionIconSpriteHeight },
+                    { node.data.position.x, node.data.position.y, ActionIconSpriteWidth, ActionIconSpriteHeight},
+                    {ActionIconSpriteWidth/2, ActionIconSpriteHeight/2}, 0, iconColor);
                 break;
             }
             break;
@@ -1237,9 +1258,6 @@ void RenderNode(const ConnectorNode& node)
 }
 void RenderMap()
 {
-    // border
-    DrawRectangleLinesEx(LevelMapArea, BorderLineThick, BorderColor);
-
     // Render Map
     if (game_context.map_data != nullptr)
     {
@@ -1269,6 +1287,8 @@ void RenderMap()
             {0, 0}, 0, WHITE);
     }
 
+    // border
+    DrawRectangleLinesEx(LevelMapArea, BorderLineThick, BorderColor);
 }
 
 
@@ -1296,6 +1316,8 @@ void UpdateDrawFrame()
             // show welcome text
             const auto titleTextSize = MeasureTextEx(GetFontDefault(), TitleText, TitleTextFontSize, TitleTextFontSize/10);
             DrawText(TitleText, ConnectorArea.x + ConnectorArea.width/2 - titleTextSize.x/2, ConnectorArea.y + 72, TitleTextFontSize, TextFontColor);
+            const auto subTitleTextSize = MeasureTextEx(GetFontDefault(), SubTitleText, SubTitleTextFontSize, SubTitleTextFontSize/10);
+            DrawText(SubTitleText, ConnectorArea.x + ConnectorArea.width/2 - titleTextSize.x/2, ConnectorArea.y + 72 + titleTextSize.y + 4, SubTitleTextFontSize, DisabledColor);
 
             const auto welcomeTextSize = MeasureTextEx(GetFontDefault(), WelcomeText, WelcomeTextFontSize, WelcomeTextFontSize/10);
             DrawText(WelcomeText, LevelArea.x + LevelArea.width/2 - welcomeTextSize.x/2, LevelArea.y + 72, WelcomeTextFontSize, TextFontColor);
@@ -1332,7 +1354,9 @@ void UpdateDrawFrame()
                 RenderNode(node);
             }
 
-            DrawText(TextFormat(LevelsHelperFormat, game_context.level), ConnectorArea.x + 8, ConnectorArea.y + 8, HelperTextFontSize, TextFontColor);
+            // level text
+            const auto startButtonTextSize = MeasureTextEx(GetFontDefault(), game_context.level_helper_text.c_str(), LevelHelperTextFontSize, LevelHelperTextFontSize/10);
+            DrawText(game_context.level_helper_text.c_str(), LevelArea.x + LevelArea.width/2 - startButtonTextSize.x/2, LevelArea.y + 8, LevelHelperTextFontSize, TextFontColor);
 
             // helper text (connections, node info)
             DrawText(game_context.left_helper_text.c_str(), LeftTextArea.x + 8, LeftTextArea.y + 8, HelperTextFontSize, TextFontColor);
@@ -1354,6 +1378,7 @@ void UpdateDrawFrame()
 
             // helper text (actions, key binds)
             DrawText(game_context.right_helper_text.c_str(), RightHelperTextAreaRect.x, RightHelperTextAreaRect.y, HelperTextFontSize, TextFontColor);
+
 
             RenderMap();
         }

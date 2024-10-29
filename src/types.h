@@ -22,15 +22,6 @@ enum class ConnectorType
     Action,
     Key,
 };
-enum class ConnectorAction : uint8_t
-{
-    NONE,
-    MovementLeft,
-    MovementRight,
-    MovementUp,
-    MovementDown,
-    Jump,
-};
 enum class ConnectorKey : int
 {
     NONE = KEY_NULL,
@@ -40,6 +31,8 @@ enum class ConnectorKey : int
     D = KEY_D,
     Space = KEY_SPACE,
 };
+
+// also sprite indexes
 enum class CharacterDirection : uint8_t
 {
     Right,
@@ -54,6 +47,15 @@ enum class TileSet : uint8_t
     Key,
     Void1,
     Void2
+};
+enum class ConnectorAction : int
+{
+    NONE = -1,
+    MovementRight = 0,
+    MovementLeft = 1,
+    MovementDown = 2,
+    MovementUp = 3,
+    Jump = 4,
 };
 
 /// Types

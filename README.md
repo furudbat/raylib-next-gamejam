@@ -40,9 +40,9 @@ _Copyright (c) 2022-2024 Ramon Santamaria ([@raysan5](https://twitter.com/raysan
 
 -----------------------------------
 
-## Neuron Controls
+## NeuroCiruit
 
-![Neuron Controls](screenshots/screenshot000.png "Neuron Controls")
+![NeuroCiruit](screenshots/screenshot000.png "NeuroCiruit")
 
 _Entry for raylib NEXT gamejam, theme: **connections**_
 
@@ -60,7 +60,7 @@ Use your connected controls to move the characters and exit the level.
  - ~~walls and obstetrical in the node selection~~
  - **Rules**
    - [x] Only connect Action with Keys or Action with other Actions
-   - [ ] Crossing (connection) lines with other lines not allowed
+   - [x] Crossing (connection) lines with other lines not allowed
    - [x] Crossing (connection) lines with nodes not allowed
    - [x] Action can only connect with one Key
    - [x] Action can only have one direct connection with one Key
@@ -68,7 +68,7 @@ Use your connected controls to move the characters and exit the level.
 ### Controls
 
 Keyboard/Mouse:
- - click on one Node to select an Action/Key and click on another Node (Action)
+ - click on one Node to select an Action/Key and click on another Node (Action) to connect
    - left-click to connect nodes
    - right-click to remove connections
  - use the connected key-binds to move the character, possible keys:

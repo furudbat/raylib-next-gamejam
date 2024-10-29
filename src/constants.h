@@ -26,13 +26,13 @@ inline constexpr Rectangle LevelArea {
 };
 
 inline constexpr Rectangle LevelMapArea {
-    435, 35, 325, 320
+    425, 35, 11*32, 10*32
 };
 inline constexpr Rectangle LeftTextArea {
     25, 375, 352, 64,
 };
 inline constexpr Rectangle RightTextArea {
-    425, 375, 352, 64,
+    425, 375, 11*32, 64,
 };
 
 inline constexpr Rectangle StartButtonRect {
@@ -63,7 +63,8 @@ inline constexpr Rectangle RightHelperTextAreaRect {
 
 /// Font size and style (colors)
 inline constexpr int TextFontSize = 14;
-inline constexpr int HelperTextFontSize = 12;
+inline constexpr int HelperTextFontSize = 14;
+inline constexpr int LevelHelperTextFontSize = 16;
 inline constexpr auto TextFontColor = ColorPalette[2];
 inline constexpr auto BackgroundColor = ColorPalette[0];
 inline constexpr auto BorderColor = ColorPalette[2];
@@ -71,9 +72,9 @@ inline constexpr int BorderLineThick = 1;
 inline constexpr auto ButtonColor = ColorPalette[2];
 inline constexpr auto ButtonHoverColor = ColorPalette[1];
 inline constexpr int ButtonLineThick = 1;
-inline constexpr int TitleFontSize = 14;
 //// Start
 inline constexpr int TitleTextFontSize = 32;
+inline constexpr int SubTitleTextFontSize = 20;
 inline constexpr int WelcomeTextFontSize = 16;
 inline constexpr int StartButtonTextFontSize = 18;
 //// Nodes
@@ -102,6 +103,9 @@ inline constexpr int StartLevel = 1; // for testing
 //// Character
 inline constexpr int CharacterSpriteWidth = 32;
 inline constexpr int CharacterSpriteHeight = 32;
+//// Icon
+inline constexpr int ActionIconSpriteWidth = 32;
+inline constexpr int ActionIconSpriteHeight = 32;
 
 /// Node Settings
 inline constexpr int MaxNodeConnections = 2;
@@ -109,8 +113,13 @@ inline constexpr int MaxIndirectConnections = 4;
 inline constexpr int MaxNodesInLevel = 10;
 
 /// strings
-constexpr const char* TitleText = "Neuron Controls";
-constexpr const char* WelcomeText = "Connect Actions and Key-Binds on the left side.";
+constexpr const char* TitleText = "NeuroCiruit";
+constexpr const char* SubTitleText = "";
+constexpr const char* WelcomeText = R"(Connect Action- and Key-Nodes on the left side
+to bind your keys.
+
+
+)";
 //// Buttons
 constexpr const char* WelcomeStartButtonText = "START";
 constexpr const char* GoButtonText = "GO";
