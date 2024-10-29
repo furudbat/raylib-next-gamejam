@@ -1,72 +1,11 @@
 #pragma once
 
+#include "constants.h"
 #include <raylib.h>
 #include <array>
 #include <vector>
 #include <unordered_set>
-#include <unordered_map>
 #include <cstdint>
-
-/// Color Palette
-inline constexpr std::array<Color, 8> ColorPalette {
-    Color{39, 41, 70, 255},     // Background
-    Color{237, 160, 49, 255},
-    Color{231, 255, 238, 255},
-    Color{96, 34, 34, 255},
-    Color{103, 160, 160, 255},
-    Color{129, 15, 166, 255},
-    Color{237, 35, 61, 255},
-    RAYWHITE,
-};
-
-
-/// Rectangle/Areas
-inline constexpr Rectangle ConnectorArea {
-    0, 0, 400, 450,
-};
-inline constexpr Rectangle LevelArea {
-    401, 0, 399, 450,
-};
-
-inline constexpr Rectangle LevelMapArea {
-    435, 35, 325, 320
-};
-inline constexpr Rectangle LeftTextArea {
-    25, 375, 352, 64,
-};
-inline constexpr Rectangle RightTextArea {
-    425, 375, 352, 64,
-};
-
-inline constexpr Rectangle StartButtonRect {
-    400 / 2 - 8*12/2,
-    2*450/3 - 32/2,
-    8*12,
-    32,
-};
-inline constexpr Rectangle StartMainCharacterButtonRect {
-    LeftTextArea.x + LeftTextArea.width - 8*12 - 8,
-    LeftTextArea.y + LeftTextArea.height/2 - 32/2,
-    8*12,
-    32,
-};
-inline constexpr Rectangle ResetMainCharacterButtonRect {
-    RightTextArea.x + 8,
-    RightTextArea.y + RightTextArea.height/2 - 32/2,
-    8*12,
-    32,
-};
-inline constexpr Rectangle HelperTextAreaRect {
-    ResetMainCharacterButtonRect.x + ResetMainCharacterButtonRect.width + 6,
-    ResetMainCharacterButtonRect.y,
-    RightTextArea.width/2,
-    RightTextArea.height,
-};
-
-// Constants
-inline constexpr int MaxNodeConnections = 2;
-inline constexpr int MaxIndirectConnections = 4;
-inline constexpr int MaxNodesInLevel = 10;
 
 /// enums
 enum class GameState
@@ -113,36 +52,9 @@ enum class TileSet : uint8_t
     Floor,
     Door,
     Key,
-    Void,
+    Void1,
+    Void2
 };
-
-/// Font size and style (colors)
-inline constexpr int TextFontSize = 14;
-inline constexpr int HelperTextFontSize = 12;
-inline constexpr auto TextFontColor = ColorPalette[2];
-inline constexpr auto BackgroundColor = ColorPalette[0];
-inline constexpr auto BorderColor = ColorPalette[2];
-inline constexpr auto ButtonColor = ColorPalette[2];
-inline constexpr int TitleFontSize = 14;
-//// Start
-///
-inline constexpr int TitleTextFontSize = 32;
-inline constexpr int WelcomeTextFontSize = 16;
-inline constexpr int StartButtonTextFontSize = 18;
-inline constexpr int NodeFontSize = 16;
-//// Nodes
-inline constexpr int NodeLineThick = 2;
-inline constexpr auto NodeLineColor = ColorPalette[2];
-//// ActionNode
-inline constexpr int ActionNodeSides = 6;
-inline constexpr int ActionNodeRadius = 18;
-inline constexpr int ActionNodeRotation = 0;
-inline constexpr auto ActionNodeColor = ColorPalette[1];
-//// KeyNode
-inline constexpr int KeyNodeRadius = 18;
-inline constexpr auto KeyNodeColor = ColorPalette[4];
-//// Map
-inline constexpr auto TileMapColor = ColorPalette[2];
 
 /// Types
 struct NodeData {
@@ -212,16 +124,6 @@ inline constexpr NodeData KeyNode(Vector2 pos, ConnectorKey key) {
         .type = ConnectorType::Key,
     };
 }
-
-/// Level Settings
-inline constexpr int LevelTilesWidth = 11;
-inline constexpr int LevelTilesHeight = 10;
-inline constexpr int LevelTilesetWidth = 32;
-inline constexpr int LevelTilesetHeight = 32;
-inline constexpr int MaxLevels = 1;
-//// Character
-inline constexpr int CharacterSpriteWidth = 32;
-inline constexpr int CharacterSpriteHeight = 32;
 
 using LevelLine_t = std::array<int, LevelTilesWidth>;
 using Level_t = std::array<LevelLine_t, LevelTilesHeight>;

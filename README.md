@@ -58,6 +58,12 @@ Use your connected controls to move the characters and exit the level.
  - move the character with your customized key-binds
  - ~~collect key to open door~~
  - ~~walls and obstetrical in the node selection~~
+ - **Rules**
+   - [x] Only connect Action with Keys or Action with other Actions
+   - [ ] Crossing (connection) lines with other lines not allowed
+   - [x] Crossing (connection) lines with nodes not allowed
+   - [x] Action can only connect with one Key
+   - [x] Action can only have one direct connection with one Key
 
 ### Controls
 
@@ -79,6 +85,7 @@ _TODO: Show your game to the world, animated GIFs recommended!._
 ### Developers
 
  - [@furudbat](https://twitter.com/furudbat) - Developer
+ - [@blacktiger5](https://twitter.com/blacktiger5_) - Art, Level Design
 
 ### Links
 
