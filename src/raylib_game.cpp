@@ -22,6 +22,8 @@
 #include <array>
 #include <chrono>
 #include <cassert>
+#include <vector>
+#include <set>
 
 //----------------------------------------------------------------------------------
 // Defines and Macros
@@ -40,88 +42,39 @@
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
 //----------------------------------------------------------------------------------
-inline constexpr std::array<Color, 8> ColorPalette {
-    Color{39, 41, 70, 255},
-    Color{237, 160, 49, 255},
-    Color{231, 255, 238, 255},
-    Color{96, 34, 34, 255},
-    Color{103, 160, 160, 255},
-    Color{129, 15, 166, 255},
-    Color{237, 35, 61, 255},
-    RAYWHITE,
-};
-inline constexpr Rectangle ConnectorArea {
-    0, 0, 400, 450,
-};
-inline constexpr Rectangle LevelArea {
-    401, 0, 399, 450,
-};
+#include "types.h"
+#include "level1.h"
 
-inline constexpr std::chrono::milliseconds StartCooldown {3800};
-enum class GameState
-{
-    Start,
-    Main,
-    End,
-};
-
-enum class ConnectorType
-{
-    DISABLED,
-    Action,
-    Key,
-};
-enum class ConnectorAction : uint8_t
-{
-    NONE,
-    MovementLeft,
-    MovementRight,
-    MovementUp,
-    MovementDown,
-    Jump,
-};
-enum class ConnectorKey : int
-{
-    NONE = KEY_NULL,
-    W = KEY_W,
-    A = KEY_A,
-    S = KEY_S,
-    D = KEY_D,
-    Space = KEY_SPACE,
-};
-
-inline constexpr int MaxNodeConnections = 2;
-inline constexpr int MaxIndirectConnections = 2;
-struct ConnectorNode {
-    int index{-1};
-    Vector2 position{0, 0};
-    ConnectorAction action{ConnectorAction::NONE};
-    ConnectorKey key{ConnectorKey::NONE};
-    ConnectorType type{ConnectorType::DISABLED};
-    int connected_counter{0};
-    bool is_selected{false};
-    std::array<int, MaxNodeConnections> direct_connections{};
-
-    // computed
-    std::array<ConnectorNode*, MaxIndirectConnections> connected_nodes{};
-    std::vector<ConnectorAction> connected_actions{};
-
-    ConnectorNode()
-    {
-        direct_connections.fill(-1);
-        connected_nodes.fill(nullptr);
-        connected_actions.reserve(MaxIndirectConnections);
-    }
-};
 struct GameContext
 {
-    std::array<ConnectorNode, 10> nodes;
+    Texture2D tileset_texture{0};
+    Texture2D character_sprite_sheet_texture{0};
     std::chrono::milliseconds delta{std::chrono::milliseconds::zero()};
-    int score{0};
-    GameState state {GameState::Start};
-    std::chrono::milliseconds start_cooldown {StartCooldown};
-    std::chrono::milliseconds timer {std::chrono::milliseconds::zero()};
+
+    GameState state{GameState::Start};
+    std::chrono::milliseconds timer{std::chrono::milliseconds::zero()};
     std::chrono::milliseconds start_time{std::chrono::milliseconds::zero()};
+    GameLevelNodes nodes;
+    const Level_t* map_data{nullptr};
+
+    int level{0};
+    Vector2 player_tiles_position{0, 0};
+    Vector2 player_start_tiles_position{0, 0};
+    CharacterDirection player_direction{CharacterDirection::Right};
+    int level_max_node_connections{0};
+    int level_connections{0};
+    ConnectorKey player_current_key{ConnectorKey::NONE};
+    int player_action_index{-1};
+
+
+    // computed
+    std::unordered_map<ConnectorKey, std::vector<ConnectorAction>> key_binds;
+    std::string helper_lines{};
+
+    GameContext()
+    {
+        helper_lines.reserve(24*4);
+    }
 
     void clearNodes ()
     {
@@ -129,35 +82,10 @@ struct GameContext
         for (size_t i = 0; i < nodes.size(); ++i)
         {
             nodes[i] = {};
-            nodes[i].index = i;
+            nodes[i].index = static_cast<int>(i);
         }
     }
 };
-constexpr void setActionNode(ConnectorNode& node, Vector2 pos, ConnectorAction action)
-{
-    node.position = pos;
-    node.action = action;
-    node.key = ConnectorKey::NONE;
-    node.type = ConnectorType::Action;
-    node.is_selected = false;
-}
-constexpr void setKeyNode(ConnectorNode& node, Vector2 pos, ConnectorKey key)
-{
-    node.position = pos;
-    node.action = ConnectorAction::NONE;
-    node.key = key;
-    node.type = ConnectorType::Key;
-    node.is_selected = false;
-}
-constexpr void clearKeyNode(ConnectorNode& node)
-{
-    //node.index = -1;
-    node.position = {0, 0};
-    node.action = ConnectorAction::NONE;
-    node.key = ConnectorKey::NONE;
-    node.type = ConnectorType::DISABLED;
-    node.is_selected = false;
-}
 
 //----------------------------------------------------------------------------------
 // Global Variables Definition
@@ -167,8 +95,6 @@ inline constexpr int ScreenHeight = 450;
 
 /// @NOTE: game needs to be static for emscripten, see UpdateDrawFrame (no parameter passing)
 static GameContext game_context;
-
-// TODO: Define global variables here, recommended to make them static
 
 //----------------------------------------------------------------------------------
 // Module Functions Declaration
@@ -195,9 +121,10 @@ int main()
 
     // Initialization
     //--------------------------------------------------------------------------------------
-    InitWindow(ScreenWidth, ScreenHeight, "raylib gamejam template");
+    InitWindow(ScreenWidth, ScreenHeight, "Neuron Controls - raylib NEXT gamejam 2024");
     
-    // TODO: Load resources / Initialize variables at this point
+    game_context.tileset_texture = LoadTexture("resources/tileset.png");
+    game_context.character_sprite_sheet_texture = LoadTexture("resources/character.png");
 
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(UpdateDrawFrame, 60, 1);
@@ -215,7 +142,8 @@ int main()
     // De-Initialization
     //--------------------------------------------------------------------------------------
     
-    // TODO: Unload all loaded resources at this point
+    UnloadTexture(game_context.tileset_texture);
+    UnloadTexture(game_context.character_sprite_sheet_texture);
 
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
@@ -226,33 +154,45 @@ int main()
 //--------------------------------------------------------------------------------------------
 // Module functions definition
 //--------------------------------------------------------------------------------------------
-static void UpdateStart()
+static void SetLevel(int level)
 {
     using fsec = std::chrono::duration<float>;
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || game_context.start_cooldown <= std::chrono::milliseconds::zero()) {
-        game_context.start_cooldown = std::chrono::milliseconds::zero();
-        game_context.start_time = std::chrono::duration_cast<std::chrono::milliseconds>(fsec{GetTime()});
-        game_context.state = GameState::Main;
-
-        game_context.clearNodes();
-        setActionNode(game_context.nodes[0], {60, 44}, ConnectorAction::MovementRight);
-        setKeyNode(game_context.nodes[1], {204, 70}, ConnectorKey::D);
-        setActionNode(game_context.nodes[2], {68, 386}, ConnectorAction::MovementUp);
-        setKeyNode(game_context.nodes[3], {238, 254}, ConnectorKey::W);
-
-        return;
+    game_context.start_time = std::chrono::duration_cast<std::chrono::milliseconds>(fsec{GetTime()});
+    game_context.state = GameState::NodesMain;
+    game_context.level = level;
+    game_context.level_connections = 0;
+    game_context.player_current_key = ConnectorKey::NONE;
+    game_context.player_action_index = -1;
+    switch(game_context.level)
+    {
+        case 1:
+            game_context.nodes = GetLevelNodes(level1::NodesData);
+            game_context.map_data = &level1::MapData;
+            game_context.player_tiles_position = level1::CharacterStartTilesPosition;
+            game_context.player_start_tiles_position = level1::CharacterStartTilesPosition;
+            game_context.player_direction = level1::CharacterStartDirection;
+            game_context.level_max_node_connections = level1::MaxNodeConnections;
+            break;
+        default: TraceLog(LOG_ERROR, "Error Not Found: %i", game_context.level);
     }
-    game_context.start_cooldown -= game_context.delta;
+}
+static void UpdateStart()
+{
+    const auto mouse = GetMousePosition();
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionRecs(StartButtonRect, {mouse.x, mouse.y , 8, 8})) {
+        SetLevel(1);
+    }
 }
 
-static void linkNodes(int node_selected1, int node_selected2);
+static bool linkNodes(int node_selected1, int node_selected2);
 [[nodiscard]] static bool validConnection(int node_selected1, int node_selected2);
 static void unlinkNode(ConnectorNode& node);
 static void updateCountConnectedNode(ConnectorNode& node);
 static void updateNodeConnections(ConnectorNode& node);
-static void UpdateMain()
+static void updateAllNodes();
+static void UpdateNodesMain()
 {
-    // end goal
+    // update timer
     using fsec = std::chrono::duration<float>;
     const auto end_time = std::chrono::duration_cast<std::chrono::milliseconds>(fsec{GetTime()});
     game_context.timer = end_time - game_context.start_time;
@@ -263,9 +203,9 @@ static void UpdateMain()
         const auto mouse = GetMousePosition();
         for (auto& node : game_context.nodes)
         {
-            if (node.type != ConnectorType::DISABLED)
+            if (node.data.type != ConnectorType::DISABLED)
             {
-                if(CheckCollisionCircleRec(node.position, 16, {mouse.x, mouse.y, 8, 8}))
+                if(CheckCollisionCircleRec(node.data.position, 16, {mouse.x, mouse.y, 8, 8}))
                 {
                     node.is_selected = true;
                 }
@@ -295,6 +235,7 @@ static void UpdateMain()
             game_context.nodes[node_selected1].is_selected = false;
             game_context.nodes[node_selected2].is_selected = false;
         }
+        updateAllNodes();
     }
     else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
     {
@@ -302,50 +243,98 @@ static void UpdateMain()
         for (size_t i = 0; i < game_context.nodes.size(); ++i)
         {
             auto& node = game_context.nodes[i];
-            if (node.type != ConnectorType::DISABLED)
+            if (node.data.type != ConnectorType::DISABLED)
             {
-                if(CheckCollisionCircleRec(node.position, 16, {mouse.x, mouse.y, 8, 8}))
+                if(CheckCollisionCircleRec(node.data.position, 16, {mouse.x, mouse.y, 8, 8}))
                 {
                     unlinkNode(node);
                 }
             }
         }
+        updateAllNodes();
+    }
+
+    const auto mouse = GetMousePosition();
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionRecs(StartMainCharacterButtonRect, {mouse.x, mouse.y , 8, 8})) {
+        game_context.state = GameState::CharacterMain;
+        return;
     }
 }
 
-void linkNodes(int node_selected1, int node_selected2)
+
+static void updateLevelConnectionCount()
 {
+    game_context.level_connections = 0;
+    for (const auto& node : game_context.nodes)
+    {
+        if (node.data.type != ConnectorType::DISABLED)
+        {
+            for (const auto& connected_node_index : node.direct_connections)
+            {
+                if (connected_node_index != -1)
+                {
+                    game_context.level_connections++;
+                }
+            }
+        }
+    }
+    /// @NOTE(workaround): for bidirectional connections
+    game_context.level_connections /= 2;
+}
+bool linkNodes(int node_selected1, int node_selected2)
+{
+    updateLevelConnectionCount();
+    // check max connections (per level)
+    if (game_context.level_connections >= game_context.level_max_node_connections)
+    {
+        return false;
+    }
+
     /// @TODO: validate connection
     if (validConnection(node_selected1, node_selected2))
     {
-        for (auto& connected_node : game_context.nodes[node_selected1].direct_connections)
+        for (auto& connected_node_index : game_context.nodes[node_selected1].direct_connections)
         {
-            if (connected_node == -1)
+            if (connected_node_index == -1)
             {
-                connected_node = node_selected2;
+                connected_node_index = node_selected2;
                 break;
             }
         }
-        for (auto& connected_node : game_context.nodes[node_selected2].direct_connections)
+        for (auto& connected_node_index : game_context.nodes[node_selected2].direct_connections)
         {
-            if (connected_node == -1)
+            if (connected_node_index == -1)
             {
-                connected_node = node_selected1;
-                break;;
+                connected_node_index = node_selected1;
+                break;
             }
         }
+
         /// @TODO: optimize count with `game_context.nodes[node_selected1].connected_counter++` ???
         updateCountConnectedNode(game_context.nodes[node_selected1]);
         updateCountConnectedNode(game_context.nodes[node_selected2]);
+        updateLevelConnectionCount();
+        return true;
     }
+
+    return false;
 }
 bool validConnection(int node_selected1, int node_selected2)
 {
     if (node_selected1 != -1 && node_selected2 != -1)
     {
-        if (game_context.nodes[node_selected1].type != game_context.nodes[node_selected2].type ||
-            (game_context.nodes[node_selected1].type == ConnectorType::Action && game_context.nodes[node_selected2].type == ConnectorType::Action))
+        if (game_context.nodes[node_selected1].data.type != game_context.nodes[node_selected2].data.type ||
+            (game_context.nodes[node_selected1].data.type == ConnectorType::Action && game_context.nodes[node_selected2].data.type == ConnectorType::Action))
         {
+            if (game_context.nodes[node_selected1].connected_counter >= MaxNodeConnections)
+            {
+                return false;
+            }
+            if (game_context.nodes[node_selected2].connected_counter >= MaxNodeConnections)
+            {
+                return false;
+            }
+
             return true;
         }
     }
@@ -372,7 +361,7 @@ void unlinkNode(ConnectorNode& node)
     for (size_t j = 0; j < game_context.nodes.size(); ++j)
     {
         auto& other_node = game_context.nodes[j];
-        if (node.index != j && other_node.type != ConnectorType::DISABLED)
+        if (node.index != j && other_node.data.type != ConnectorType::DISABLED)
         {
             // unlink outer connections
             for (auto& connected_node_index : other_node.direct_connections)
@@ -395,6 +384,7 @@ void unlinkNode(ConnectorNode& node)
         }
     }
     updateCountConnectedNode(node);
+    updateLevelConnectionCount();
 }
 void updateCountConnectedNode(ConnectorNode& node)
 {
@@ -414,65 +404,103 @@ void updateCountConnectedNode(ConnectorNode& node)
     }
     updateNodeConnections(node);
 }
-void updateNodeConnections(ConnectorNode& node)
+void UpdateKeyBinds()
 {
-    const auto getFreeConnectedNode = [&]() -> ConnectorNode**
+    game_context.key_binds.clear();
+    for (const auto& node : game_context.nodes)
     {
-        for (auto& connection : node.connected_nodes)
+        if (node.data.type == ConnectorType::Key && node.index != -1 && !node.connected_actions.empty())
         {
-            if (connection == nullptr)
+            switch (node.data.key)
             {
-                return &connection;
+            case ConnectorKey::NONE:
+                break;
+            case ConnectorKey::W:
+            case ConnectorKey::S:
+            case ConnectorKey::D:
+            case ConnectorKey::Space:
+                game_context.key_binds[node.data.key] = {};
+                break;
+            }
+
+            for (size_t i = 0;i < node.connected_actions.size();++i)
+            {
+                const auto& connected_action = node.connected_actions[i];
+                switch (connected_action)
+                {
+                case ConnectorAction::NONE:
+                    break;
+                case ConnectorAction::MovementLeft:
+                case ConnectorAction::MovementRight:
+                case ConnectorAction::MovementUp:
+                case ConnectorAction::MovementDown:
+                case ConnectorAction::Jump:
+                    game_context.key_binds[node.data.key].push_back(connected_action);
+                    break;
+                }
             }
         }
-        return nullptr;
-    };
-    const auto addConnection = [&](int root_node_index, int search_node_index, const std::array<int, MaxNodeConnections>& direct_connections)
+    }
+}
+void updateNodeConnections(ConnectorNode& node)
+{
+    const auto addConnection = [&](int root_node_index, const ConnectorNode& connect_node)
     {
-        if (search_node_index != -1)
+        if (connect_node.data.type != ConnectorType::DISABLED)
         {
-            for (const auto& direct_connected_node_index : direct_connections)
+            for (const auto& direct_connected_node_index : connect_node.direct_connections)
             {
-                if (direct_connected_node_index == search_node_index && direct_connected_node_index != root_node_index)
+                if (direct_connected_node_index != -1 && direct_connected_node_index != root_node_index)
                 {
-                    if (auto** connection = getFreeConnectedNode(); connection != nullptr)
+                    if(node.connected_nodes.size() < MaxIndirectConnections)
                     {
-                        *connection = &game_context.nodes[direct_connected_node_index];
+                        node.connected_nodes.emplace(direct_connected_node_index);
                     }
                 }
             }
         }
     };
 
-    node.connected_nodes.fill(nullptr);
-    for (size_t i = 0; i < game_context.nodes.size(); ++i)
+    node.connected_nodes.clear();
+    // add direct nodes
+    for (const auto& direct_connected_node_index : node.direct_connections)
     {
-        if (node.type != ConnectorType::DISABLED && node.index != i)
+        if (direct_connected_node_index != -1)
         {
-            // check direct connect with the other node
-            addConnection(node.index, node.index, game_context.nodes[i].direct_connections);
-            /// @TODO: use recursion, for going deeper in the graph
-            for (auto connected_node_index : node.direct_connections)
+            node.connected_nodes.emplace(direct_connected_node_index);
+        }
+    }
+    // add indirect node (connection)
+    if (node.data.type != ConnectorType::DISABLED)
+    {
+        // check direct connect with the other node
+        addConnection(node.index, node);
+        /// @TODO: use recursion, for going deeper in the graph
+        for (const auto& connected_node_index : node.direct_connections)
+        {
+            if (node.index != connected_node_index && connected_node_index != -1)
             {
-                if (node.index != connected_node_index && connected_node_index != -1)
+                addConnection(node.index, game_context.nodes[connected_node_index]);
+                for (const auto& inner_connected_node_index_1 : game_context.nodes[connected_node_index].direct_connections)
                 {
-                    addConnection(node.index, connected_node_index, game_context.nodes[connected_node_index].direct_connections);
-                    /*
-                    for (auto inner_connected_node_index_1 : game_context.nodes[connected_node_index].connections)
+                    if (node.index != inner_connected_node_index_1 && inner_connected_node_index_1 != -1)
                     {
-                        if (i != inner_connected_node_index_1 && inner_connected_node_index_1 != -1)
+                        addConnection(node.index, game_context.nodes[inner_connected_node_index_1]);
+                        for (const auto& inner_connected_node_index_2 : game_context.nodes[inner_connected_node_index_1].direct_connections)
                         {
-                            addConnection(connected_node_index, game_context.nodes[inner_connected_node_index_1].connections);
-                            for (auto inner_connected_node_index_2 : game_context.nodes[inner_connected_node_index_1].connections)
+                            if (node.index != inner_connected_node_index_2 && inner_connected_node_index_2 != -1)
                             {
-                                if (i != inner_connected_node_index_2 && inner_connected_node_index_2 != -1)
+                                addConnection(node.index, game_context.nodes[inner_connected_node_index_2]);
+                                for (const auto& inner_connected_node_index_3 : game_context.nodes[inner_connected_node_index_2].direct_connections)
                                 {
-                                    addConnection(inner_connected_node_index_1, game_context.nodes[inner_connected_node_index_2].connections);
+                                    if (node.index != inner_connected_node_index_3 && inner_connected_node_index_3 != -1)
+                                    {
+                                        addConnection(node.index, game_context.nodes[inner_connected_node_index_3]);
+                                    }
                                 }
                             }
                         }
                     }
-                    */
                 }
             }
         }
@@ -480,34 +508,179 @@ void updateNodeConnections(ConnectorNode& node)
 
     // update actions
     node.connected_actions.clear();
-    for(const auto& connected_node : node.connected_nodes)
+    /// @NOTE(workaround): reverse set to the order of the actions is right
+    std::vector connected_nodes_arr(node.connected_nodes.begin(), node.connected_nodes.end());
+    for (auto it = connected_nodes_arr.rbegin(); it != connected_nodes_arr.rend(); ++it)
     {
-        if (connected_node != nullptr && connected_node->index != node.index)
+        const auto& connected_node_index = *it;
+        if (connected_node_index != -1 && connected_node_index != node.index)
         {
-            if (connected_node->type == ConnectorType::Action)
+            const auto& connected_node = game_context.nodes[connected_node_index];
+            if (connected_node.data.type == ConnectorType::Action)
             {
-                node.connected_actions.push_back(connected_node->action);
+                node.connected_actions.push_back(connected_node.data.action);
             }
         }
     }
 
+    UpdateKeyBinds();
+
     // debug
-    {
+    if (1) {
         TraceLog(LOG_DEBUG, "node %d -> ", node.index);
-        for(const auto& connection : node.connected_nodes)
+        for(const auto& connected_index : node.connected_nodes)
         {
-            TraceLog(LOG_DEBUG, " %d", connection);
+            TraceLog(LOG_DEBUG, " %d", connected_index);
         }
     }
 }
+void updateAllNodes()
+{
+    for(auto& node : game_context.nodes)
+    {
+        updateCountConnectedNode(node);
+    }
+}
 
+static void NextLevel()
+{
+    if (game_context.level > 0 && game_context.level < MaxLevels)
+    {
+        SetLevel(game_context.level+1);
+    } else if (game_context.level == MaxLevels)
+    {
+        game_context.state = GameState::End;
+        return;
+    }
+}
+static void PlayerDie()
+{
+    game_context.state = GameState::NodesMain;
+    game_context.player_current_key = ConnectorKey::NONE;
+    game_context.player_action_index = -1;
+    game_context.player_tiles_position = game_context.player_start_tiles_position;
+}
+static void UpdateCharacterMain()
+{
+    const auto mouse = GetMousePosition();
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionRecs(ResetMainCharacterButtonRect, {mouse.x, mouse.y , 8, 8})) {
+        game_context.state = GameState::NodesMain;
+        switch (game_context.level)
+        {
+        case 1:
+            game_context.player_direction = level1::CharacterStartDirection;
+            game_context.player_tiles_position = level1::CharacterStartTilesPosition;
+            game_context.player_current_key = ConnectorKey::NONE;
+            game_context.player_action_index = -1;
+            break;
+        }
+        return;
+    }
+
+    // Update key binds (pressed)
+    for (const auto& [key, actions]: game_context.key_binds)
+    {
+        if (IsKeyPressed(static_cast<int>(key)))
+        {
+            game_context.player_current_key = key;
+            game_context.player_action_index = 0;
+            break;
+        }
+    }
+    if (game_context.player_current_key != ConnectorKey::NONE && game_context.player_action_index != -1)
+    {
+        switch(game_context.key_binds[game_context.player_current_key][game_context.player_action_index])
+        {
+        case ConnectorAction::NONE:
+            break;
+        case ConnectorAction::MovementLeft:
+            game_context.player_tiles_position.x -= 1;
+            game_context.player_direction = CharacterDirection::Left;
+            break;
+        case ConnectorAction::MovementRight:
+            game_context.player_tiles_position.x += 1;
+            game_context.player_direction = CharacterDirection::Right;
+            break;
+        case ConnectorAction::MovementUp:
+            game_context.player_tiles_position.y -= 1;
+            game_context.player_direction = CharacterDirection::Up;
+            break;
+        case ConnectorAction::MovementDown:
+            game_context.player_tiles_position.y += 1;
+            game_context.player_direction = CharacterDirection::Down;
+            break;
+        case ConnectorAction::Jump:
+            switch (game_context.player_direction)
+            {
+            case CharacterDirection::Right:
+                game_context.player_tiles_position.x += 2;
+                break;
+            case CharacterDirection::Left:
+                game_context.player_tiles_position.x -= 2;
+                break;
+            case CharacterDirection::Up:
+                game_context.player_tiles_position.y -= 2;
+                break;
+            case CharacterDirection::Down:
+                game_context.player_tiles_position.y += 2;
+                break;
+            }
+            break;
+        }
+        if (game_context.player_action_index < game_context.key_binds[game_context.player_current_key].size())
+        {
+            game_context.player_action_index++;
+        } else
+        {
+            game_context.player_current_key = ConnectorKey::NONE;
+            game_context.player_action_index = -1;
+        }
+    }
+
+    // check map conditions
+    {
+        if (game_context.map_data != nullptr)
+        {
+            const auto* player_map_tile_index = [&]() -> const int*
+            {
+                if (game_context.map_data != nullptr && (
+                    game_context.player_tiles_position.x >= 0 && game_context.player_tiles_position.y >= 0 &&
+                    game_context.player_tiles_position.y < game_context.map_data->size() && game_context.player_tiles_position.x < (*game_context.map_data)[game_context.player_tiles_position.y].size()))
+                {
+                    return &(*game_context.map_data)[game_context.player_tiles_position.y][game_context.player_tiles_position.x];
+                }
+                return nullptr;
+            }();
+            const auto player_map_tile = (player_map_tile_index != nullptr) ? static_cast<TileSet>(*player_map_tile_index) : TileSet::Void;
+            switch (player_map_tile)
+            {
+            case TileSet::Floor:
+                break;
+            case TileSet::Door:
+                NextLevel();
+                break;
+            case TileSet::Key:
+                /// @TODO: collect key
+                break;
+            case TileSet::Void:
+                PlayerDie();
+                break;
+            }
+
+            //const auto& px = LevelMapArea.x + game_context.player_tiles_position.x*CharacterSpriteWidth;
+            //const auto& py = LevelMapArea.y + game_context.player_tiles_position.y*CharacterSpriteHeight;
+            //const Rectangle player_position {px, py, CharacterSpriteWidth, CharacterSpriteHeight};
+        }
+    }
+}
 static void UpdateEnd()
 {
+    // restart
     if (IsKeyPressed(KEY_ENTER))
     {
-        // restart
         game_context = {};
         game_context.state = GameState::Start;
+        SetLevel(1);
         return;
     }
 }
@@ -519,8 +692,11 @@ void UpdateGameLogic() {
         case GameState::Start:
             UpdateStart();
             break;
-        case GameState::Main:
-            UpdateMain();
+        case GameState::NodesMain:
+            UpdateNodesMain();
+            break;
+        case GameState::CharacterMain:
+            UpdateCharacterMain();
             break;
         case GameState::End:
             UpdateEnd();
@@ -536,114 +712,158 @@ void RenderNode(const ConnectorNode& node)
         if (direct_connected_node_index != -1)
         {
             const auto& sibling_connected = game_context.nodes[direct_connected_node_index];
-            DrawLineV(node.position, sibling_connected.position, ColorPalette[5]);
+            DrawLineEx(node.data.position, sibling_connected.data.position, NodeLineThick, NodeLineColor);
         }
     }
 
     // render Node
-    constexpr int FontSize = 12;
-    const char* innerTextAction = [&]()
-    {
-        return TextFormat("%i", node.index);
-        switch (node.action)
-        {
-        case ConnectorAction::NONE:
-            return "";
-        case ConnectorAction::MovementLeft:
-            return "L";
-        case ConnectorAction::MovementRight:
-            return "L";
-        case ConnectorAction::MovementUp:
-            return "L";
-        case ConnectorAction::MovementDown:
-            return "L";
-        case ConnectorAction::Jump:
-            return "L";
-        }
-        return "";
-    }();
-    const auto innerTextActionSize = MeasureTextEx(GetFontDefault(), innerTextAction, FontSize, FontSize/10);
-
-    const char* innerTextKey = [&]()
-    {
-        return TextFormat("%i", node.index);
-        switch (node.key)
-        {
-        case ConnectorKey::NONE:
-            return "";
-        case ConnectorKey::W:
-            return "W";
-        case ConnectorKey::A:
-            return "A";
-        case ConnectorKey::S:
-            return "S";
-        case ConnectorKey::D:
-            return "D";
-        case ConnectorKey::Space:
-            return "_";
-        }
-        return "";
-    }();
-    const auto innerTextKeySize = MeasureTextEx(GetFontDefault(), innerTextKey, FontSize, FontSize/2);
-
-    switch (node.type)
+    switch (node.data.type)
     {
     case ConnectorType::DISABLED:
         return;
     case ConnectorType::Action:
-        if (node.is_selected)
         {
-            DrawPoly(node.position, 6, 16, 0, ColorPalette[1]);
-        } else {
-            DrawPolyLines(node.position, 6, 16, 0, ColorPalette[1]);
-        }
-        switch (node.action)
-        {
-        case ConnectorAction::NONE:
-            return;
-        case ConnectorAction::MovementLeft:
-        case ConnectorAction::MovementRight:
-        case ConnectorAction::MovementUp:
-        case ConnectorAction::MovementDown:
-        case ConnectorAction::Jump:
-        if (node.is_selected)
-        {
-            DrawText(innerTextAction, node.position.x - innerTextActionSize.x/2, node.position.y - innerTextActionSize.y/2, FontSize, ColorPalette[0]);
-        } else
-        {
-            DrawText(innerTextAction, node.position.x - innerTextActionSize.x/2, node.position.y - innerTextActionSize.y/2, FontSize, ColorPalette[1]);
-        }
-            break;
-        }
-        break;
-    case ConnectorType::Key:
-        if (node.is_selected)
-        {
-            DrawCircle(node.position.x, node.position.y, 16, ColorPalette[4]);
-        } else
-        {
-            DrawCircleLines(node.position.x, node.position.y, 16, ColorPalette[4]);
-        }
-        switch (node.key)
-        {
-        case ConnectorKey::NONE:
-            return;
-        case ConnectorKey::W:
-        case ConnectorKey::A:
-        case ConnectorKey::S:
-        case ConnectorKey::D:
-        case ConnectorKey::Space:
+            const char* innerTextAction = [&]()
+            {
+                // debug
+                //return TextFormat("%i", node.index);
+
+                switch (node.data.action)
+                {
+                case ConnectorAction::NONE:
+                    return "";
+                case ConnectorAction::MovementLeft:
+                    return "<-";
+                case ConnectorAction::MovementRight:
+                    return "->";
+                case ConnectorAction::MovementUp:
+                    return "^";
+                case ConnectorAction::MovementDown:
+                    return "v";
+                case ConnectorAction::Jump:
+                    return "JP";
+                }
+                return "";
+            }();
+            const auto innerTextActionSize = MeasureTextEx(GetFontDefault(), innerTextAction, NodeFontSize, NodeFontSize/10);
+
+            DrawPoly(node.data.position, ActionNodeSides, ActionNodeRadius, ActionNodeRotation, BackgroundColor);
             if (node.is_selected)
             {
-                DrawText(innerTextKey, node.position.x - innerTextKeySize.x/2, node.position.y - innerTextKeySize.y/2, 14, ColorPalette[0]);
+                DrawPoly(node.data.position, ActionNodeSides, ActionNodeRadius, ActionNodeRotation, ActionNodeColor);
+            } else {
+                DrawPolyLines(node.data.position, ActionNodeSides, ActionNodeRadius, ActionNodeRotation, ActionNodeColor);
+            }
+            switch (node.data.action)
+            {
+            case ConnectorAction::NONE:
+                return;
+            case ConnectorAction::MovementLeft:
+            case ConnectorAction::MovementRight:
+            case ConnectorAction::MovementUp:
+            case ConnectorAction::MovementDown:
+            case ConnectorAction::Jump:
+            if (node.is_selected)
+            {
+                DrawText(innerTextAction, node.data.position.x - innerTextActionSize.x/2, node.data.position.y - innerTextActionSize.y/2, NodeFontSize, BackgroundColor);
             } else
             {
-                DrawText(innerTextKey, node.position.x - innerTextKeySize.x/2, node.position.y - innerTextKeySize.y/2, 14, ColorPalette[4]);
+                DrawText(innerTextAction, node.data.position.x - innerTextActionSize.x/2, node.data.position.y - innerTextActionSize.y/2, NodeFontSize, ActionNodeColor);
+            }
+                break;
             }
             break;
         }
-        break;
+    case ConnectorType::Key:
+        {
+            const char* innerTextKey = [&]()
+            {
+                // debug
+                //return TextFormat("%i", node.index);
+
+                switch (node.data.key)
+                {
+                case ConnectorKey::NONE:
+                    return "";
+                case ConnectorKey::W:
+                    return "W";
+                case ConnectorKey::A:
+                    return "A";
+                case ConnectorKey::S:
+                    return "S";
+                case ConnectorKey::D:
+                    return "D";
+                case ConnectorKey::Space:
+                    return "_";
+                }
+                return "";
+            }();
+            const auto innerTextKeySize = MeasureTextEx(GetFontDefault(), innerTextKey, NodeFontSize, NodeFontSize/10);
+
+            DrawCircle(node.data.position.x, node.data.position.y, KeyNodeRadius, BackgroundColor);
+            if (node.is_selected)
+            {
+                DrawCircle(node.data.position.x, node.data.position.y, KeyNodeRadius, KeyNodeColor);
+            } else
+            {
+                DrawCircleLines(node.data.position.x, node.data.position.y, KeyNodeRadius, KeyNodeColor);
+            }
+            switch (node.data.key)
+            {
+            case ConnectorKey::NONE:
+                return;
+            case ConnectorKey::W:
+            case ConnectorKey::A:
+            case ConnectorKey::S:
+            case ConnectorKey::D:
+            case ConnectorKey::Space:
+                if (node.is_selected)
+                {
+                    DrawText(innerTextKey, node.data.position.x - innerTextKeySize.x/2, node.data.position.y - innerTextKeySize.y/2, NodeFontSize, BackgroundColor);
+                } else
+                {
+                    DrawText(innerTextKey, node.data.position.x - innerTextKeySize.x/2, node.data.position.y - innerTextKeySize.y/2, NodeFontSize, KeyNodeColor);
+                }
+                break;
+            }
+            break;
+        }
     }
+}
+void RenderMap()
+{
+    // border
+    DrawRectangleLinesEx(LevelMapArea, 1, BorderColor);
+
+    // Render Map
+    if (game_context.map_data != nullptr)
+    {
+        for(int y = 0;y < LevelTilesHeight; y++)
+        {
+            for(int x = 0;x < LevelTilesWidth; x++)
+            {
+                const auto& tile = (*game_context.map_data)[y][x];
+
+                float sx = tile*LevelTilesetWidth;
+                float sy = 0;
+
+                float dx = LevelMapArea.x + x*LevelTilesetWidth;
+                float dy = LevelMapArea.y + y*LevelTilesetHeight;
+
+                DrawTexturePro(game_context.tileset_texture,
+                    { sx, sy, LevelTilesetWidth, LevelTilesetHeight },
+                    { dx, dy, LevelTilesetWidth, LevelTilesetHeight},
+                    {0, 0}, 0, WHITE);
+            }
+        }
+
+        // Render Character
+        DrawTexturePro(game_context.character_sprite_sheet_texture,
+            { static_cast<float>(static_cast<int>(game_context.player_direction)*CharacterSpriteWidth), 0, CharacterSpriteWidth, CharacterSpriteHeight },
+            { LevelMapArea.x + game_context.player_tiles_position.x * LevelTilesetWidth, LevelMapArea.y + game_context.player_tiles_position.y * LevelTilesetHeight, CharacterSpriteWidth, CharacterSpriteHeight},
+            {0, 0}, 0, WHITE);
+    }
+
 }
 
 // Update and draw frame
@@ -661,30 +881,117 @@ void UpdateDrawFrame()
     BeginDrawing();
         ClearBackground(ColorPalette[0]);
 
-        // @TODO: move text out
-        constexpr const char* TitleText = "Title";
-        DrawText(TitleText, 8, 8, 14, RAYWHITE);
+        // @TODO: move text out ???
+        //constexpr const char* TitleText = "Neuron Control - Connect Action-Nodes with Key-Binding-Nodes";
+        //DrawText(TitleText, 8, 8, TitleFontSize, TextFontColor);
 
         // borders
-        DrawRectangleLinesEx(ConnectorArea, 1, RAYWHITE);
-        DrawRectangleLinesEx(LevelArea, 1, RAYWHITE);
+        DrawRectangleLinesEx(ConnectorArea, 1, BorderColor);
+        DrawRectangleLinesEx(LevelArea, 1, BorderColor);
 
         if (game_context.state == GameState::Start)
         {
             // show welcome text
-            constexpr const char* WelcomeText = "TODO: Welcome";
-            constexpr int WelcomeTextFontSize = 18;
-            DrawText(WelcomeText, LevelArea.x + LevelArea.width/2 - MeasureText(WelcomeText, WelcomeTextFontSize)/2, 72, WelcomeTextFontSize, RAYWHITE);
-        } else {
+            constexpr const char* TitleText = "Neuron Controls";
+            const auto titleTextSize = MeasureTextEx(GetFontDefault(), TitleText, TitleTextFontSize, TitleTextFontSize/10);
+            DrawText(TitleText, ConnectorArea.x + ConnectorArea.width/2 - titleTextSize.x/2, ConnectorArea.y + 72, TitleTextFontSize, TextFontColor);
 
+            constexpr const char* WelcomeText = "Connect Actions and Key-Binds on the left side.";
+            const auto welcomeTextSize = MeasureTextEx(GetFontDefault(), WelcomeText, WelcomeTextFontSize, WelcomeTextFontSize/10);
+            DrawText(WelcomeText, LevelArea.x + LevelArea.width/2 - welcomeTextSize.x/2, LevelArea.y + 72, WelcomeTextFontSize, TextFontColor);
+
+            constexpr const char* StartButtonText = "START";
+            const auto startButtonTextSize = MeasureTextEx(GetFontDefault(), StartButtonText, StartButtonTextFontSize, StartButtonTextFontSize/10);
+            DrawRectangleLinesEx(StartButtonRect, 1, ButtonColor);
+            DrawText(StartButtonText, StartButtonRect.x + StartButtonRect.width/2 - startButtonTextSize.x/2, StartButtonRect.y + StartButtonRect.height/2 - startButtonTextSize.y/2, StartButtonTextFontSize, TextFontColor);
         }
-
-        if (game_context.state == GameState::Main)
+        else if (game_context.state == GameState::NodesMain || game_context.state == GameState::CharacterMain)
         {
+            DrawRectangleLinesEx(LeftTextArea, 1, BorderColor);
+            DrawRectangleLinesEx(RightTextArea, 1, BorderColor);
+
             for (const auto& node : game_context.nodes)
             {
                 RenderNode(node);
             }
+
+            DrawText(TextFormat("Connections: %02d/%02d", game_context.level_connections, game_context.level_max_node_connections), LeftTextArea.x + 8, LeftTextArea.y + 8, HelperTextFontSize, TextFontColor);
+
+            // Main Start Button
+            if (game_context.state == GameState::NodesMain) {
+                constexpr const char* StartButtonText = "GO";
+                const auto startButtonTextSize = MeasureTextEx(GetFontDefault(), StartButtonText, StartButtonTextFontSize, StartButtonTextFontSize/10);
+                DrawRectangleLinesEx(StartMainCharacterButtonRect, 1, ButtonColor);
+                DrawText(StartButtonText, StartMainCharacterButtonRect.x + StartMainCharacterButtonRect.width/2 - startButtonTextSize.x/2, StartMainCharacterButtonRect.y + StartMainCharacterButtonRect.height/2 - startButtonTextSize.y/2, StartButtonTextFontSize, TextFontColor);
+            }
+            // Reset Button
+            if (game_context.state == GameState::CharacterMain) {
+                constexpr const char* RestartButtonText = "RESET";
+                const auto restartButtonTextSize = MeasureTextEx(GetFontDefault(), RestartButtonText, StartButtonTextFontSize, StartButtonTextFontSize/10);
+                DrawRectangleLinesEx(ResetMainCharacterButtonRect, 1, ButtonColor);
+                DrawText(RestartButtonText, ResetMainCharacterButtonRect.x + ResetMainCharacterButtonRect.width/2 - restartButtonTextSize.x/2, ResetMainCharacterButtonRect.y + StartMainCharacterButtonRect.height/2 - restartButtonTextSize.y/2, StartButtonTextFontSize, TextFontColor);
+            }
+
+            /// @TODO: extract into own function
+            // helper text
+            {
+                game_context.helper_lines.clear();
+                for (const auto& [key, actions] : game_context.key_binds)
+                {
+                    switch (key)
+                    {
+                    case ConnectorKey::NONE:
+                        break;
+                    case ConnectorKey::W:
+                        game_context.helper_lines += TextFormat("    W: ");
+                        break;
+                    case ConnectorKey::A:
+                        game_context.helper_lines += TextFormat("    A: ");
+                        break;
+                    case ConnectorKey::S:
+                        game_context.helper_lines += TextFormat("    S: ");
+                        break;
+                    case ConnectorKey::D:
+                        game_context.helper_lines += TextFormat("    D: ");
+                        break;
+                    case ConnectorKey::Space:
+                        game_context.helper_lines += TextFormat("SPACE: ");
+                        break;
+                    }
+                    for (size_t i = 0;i < actions.size();++i)
+                    {
+                        const auto& connected_action = actions[i];
+                        switch (connected_action)
+                        {
+                        case ConnectorAction::NONE:
+                            break;
+                        case ConnectorAction::MovementLeft:
+                            game_context.helper_lines += TextFormat("Left");
+                            break;
+                        case ConnectorAction::MovementRight:
+                            game_context.helper_lines += TextFormat("Right");
+                            break;
+                        case ConnectorAction::MovementUp:
+                            game_context.helper_lines += TextFormat("Up");
+                            break;
+                        case ConnectorAction::MovementDown:
+                            game_context.helper_lines += TextFormat("Down");
+                            break;
+                        case ConnectorAction::Jump:
+                            game_context.helper_lines += TextFormat("Jump");
+                            break;
+                        }
+                        if (i < actions.size()-1)
+                        {
+                            game_context.helper_lines += " -> ";
+                        }
+                    }
+                    game_context.helper_lines += "\n";
+                }
+                DrawText(game_context.helper_lines.c_str(), HelperTextAreaRect.x, HelperTextAreaRect.y, HelperTextFontSize, TextFontColor);
+            }
+
+            RenderMap();
         }
 
     EndDrawing();

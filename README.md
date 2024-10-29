@@ -40,9 +40,9 @@ _Copyright (c) 2022-2024 Ramon Santamaria ([@raysan5](https://twitter.com/raysan
 
 -----------------------------------
 
-## Neuron Control
+## Neuron Controls
 
-![Neuron Control](screenshots/screenshot000.png "Neuron Control")
+![Neuron Controls](screenshots/screenshot000.png "Neuron Controls")
 
 _Entry for raylib NEXT gamejam, theme: **connections**_
 
