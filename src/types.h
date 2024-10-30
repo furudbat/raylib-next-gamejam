@@ -58,6 +58,15 @@ enum class ConnectorAction : int
     MovementUp = 3,
     Jump = 4,
 };
+enum class ControlIcons : int
+{
+    // same as ConnectorAction
+    NONE = -1,
+    LMB = 0,
+    RMB = 1,
+    Enter = 2,
+    Backspace = 3,
+};
 
 /// Types
 struct NodeData {

@@ -81,19 +81,36 @@ inline constexpr Rectangle InGameHelpInstruction1Area {
 };
 inline constexpr Rectangle InGameHelpInstruction2Area {
     LevelArea.x + LevelArea.width - 86 - 43,
-    56, 86, 198,
+    56, 86, 295,
 };
 
+// help
 inline constexpr Rectangle Help1IconArea {
     LevelArea.x + LevelArea.width - 9*2 - 24, 10, 9*2, 9*2,
 };
+// guidelines
 inline constexpr Rectangle Help2IconArea {
-    LevelArea.x + LevelArea.width - 9*2 - 8 - 9*2 - 24, 10, 9*2, 9*2,
+    Help1IconArea.x - 8 - 9*2, 10, 9*2, 9*2,
+};
+// guidelines label
+inline constexpr Rectangle Help3Area {
+    Help2IconArea.x - 8 - 9*2 - 24, 10, 24, 18,
+};
+// Tips
+inline constexpr Rectangle Help4Area {
+    InGameHelpInstruction1Area.x + 3,
+    InGameHelpInstruction1Area.y + 198 + 4, 86 + 2 + 134, 198/3 + 22,
+};
+// Tips
+inline constexpr Rectangle Help5Area {
+    InGameHelpInstruction1Area.x + 4 + InGameHelpInstruction1Area.width,
+    InGameHelpInstruction1Area.y + 3, 134, 192,
 };
 
 /// Font size and style (colors)
 inline constexpr int TextFontSize = 14;
 inline constexpr int HelperTextFontSize = 14;
+inline constexpr int SmallHelperTextFontSize = 10;
 inline constexpr int LevelHelperTextFontSize = 16;
 inline constexpr auto TextFontColor = ColorPalette[2];
 inline constexpr auto BackgroundColor = ColorPalette[0];
@@ -102,6 +119,7 @@ inline constexpr int WindowBorderLineThick = 1;
 inline constexpr int BorderLineThick = 2;
 inline constexpr auto ButtonColor = ColorPalette[2];
 inline constexpr auto ButtonHoverColor = ColorPalette[1];
+inline constexpr auto ButtonActiveColor = ColorPalette[5];
 inline constexpr int ButtonLineThick = 4;
 //// Start
 inline constexpr int TitleTextFontSize = 32;
@@ -149,6 +167,8 @@ inline constexpr int CharacterSpriteHeight = 32;
 //// Icon
 inline constexpr int ActionIconSpriteWidth = 32;
 inline constexpr int ActionIconSpriteHeight = 32;
+inline constexpr int ControlIconSpriteWidth = 10;
+inline constexpr int ControlIconSpriteHeight = 10;
 
 /// Node Settings
 inline constexpr int MaxNodeConnections = 2;
@@ -159,11 +179,12 @@ inline constexpr int MaxNodesInLevel = 10;
 constexpr const char* TitleText = "";
 constexpr const char* SubTitleText = "";
 constexpr const char* WelcomeFooterText = "Copyright (c) 2024 furudbat";
-constexpr const char* WelcomeText = R"(Connect Action- and Key-Nodes on
+constexpr const char* WelcomeText = R"(Connect Action- and Key-Neurons on
 the left side to bind your keys.
 
-Left-Click: select and link Nodes
+Left-Click: select and link Neurons
 Right-Click: delete connections
+Rules:
 )";
 constexpr const char* EndText = R"(Thanks for Playing.
 
@@ -196,7 +217,7 @@ inline constexpr const char* LeftHelperTextConnectionsFormat = R"(Max. Connectio
 Max. Chain Length: %d
 Click on GO when you are ready.
 )";
-inline constexpr const char* LeftHelperNoConnectionsTextFormat = "Connect Actions and Key-Nodes,\nthen press GO.";
+inline constexpr const char* LeftHelperNoConnectionsTextFormat = "Connect Actions and Key-Neurons,\nthen press GO.";
 inline constexpr const char* LeftHelperCharacterTextFormat = "Move your Character and \nreach the door.";
 inline constexpr const char* RightHelperTextNoKeyBindsFormat = "No Key-Binds";
 inline constexpr const char* LevelsHelperFormat = "Level: %d";
@@ -229,3 +250,19 @@ inline constexpr const char* NodeActionJumpString = "JP";
 ///// misc
 inline constexpr const char* Help1IconString = "?";
 inline constexpr const char* Help2IconString = "L";
+inline constexpr const char* Help3TipString = "Guide->";
+inline constexpr const char* Help5TipString = R"(Hints:
+You jump in the
+direction you are
+facing.
+
+You can turn ON
+Guidelines when
+connections exists
+)";
+inline constexpr const char* Help4TipString = R"(Controls:
+  on Neurons to connect
+  on Neurons to disconnect
+  quick start the level
+  quick reset the Level
+)";

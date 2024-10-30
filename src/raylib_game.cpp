@@ -59,6 +59,7 @@ struct GameContext
     Texture2D tileset_texture{0};
     Texture2D character_sprite_sheet_texture{0};
     Texture2D icons_sprite_sheet_texture{0};
+    Texture2D icons_control_sprite_sheet_texture{0};
     std::chrono::milliseconds delta{std::chrono::milliseconds::zero()};
 
     // scene data
@@ -82,11 +83,13 @@ struct GameContext
     CharacterDirection player_start_direction{CharacterDirection::Right};
     CharacterDirection player_direction{CharacterDirection::Right};
     ConnectorKey player_current_key{ConnectorKey::NONE};
+    int player_action_index{-1};
+    int death_count{0};
     bool player_on_void_tile{false};
     bool player_on_door_tile{false};
     bool show_help_1{false};
     bool show_help_2{false};
-    int player_action_index{-1};
+    bool manuel_help{false};
 
 
     // computed
@@ -164,6 +167,7 @@ int main()
     game_context.tileset_texture = LoadTexture("resources/tileset.png");
     game_context.character_sprite_sheet_texture = LoadTexture("resources/character.png");
     game_context.icons_sprite_sheet_texture = LoadTexture("resources/icons.png");
+    game_context.icons_control_sprite_sheet_texture = LoadTexture("resources/icons-control.png");
 
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(UpdateDrawFrame, 60, 1);
@@ -188,6 +192,7 @@ int main()
     UnloadTexture(game_context.tileset_texture);
     UnloadTexture(game_context.character_sprite_sheet_texture);
     UnloadTexture(game_context.icons_sprite_sheet_texture);
+    UnloadTexture(game_context.icons_control_sprite_sheet_texture);
 
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
@@ -208,6 +213,7 @@ static void SetLevel(int level)
     game_context.level_connections = 0;
     game_context.player_current_key = ConnectorKey::NONE;
     game_context.player_action_index = -1;
+    game_context.death_count = 0;
     switch(game_context.level)
     {
         case 1:
@@ -219,6 +225,7 @@ static void SetLevel(int level)
             game_context.player_direction = level1::CharacterStartDirection;
             game_context.level_max_node_connections = level1::MaxNodeConnections;
             game_context.level_max_actions_per_key = level1::MaxActionsPerKey;
+            game_context.show_help_2 = true;
             break;
         case 2:
             game_context.nodes = CreateLevelNodes(level2::NodesData);
@@ -229,6 +236,10 @@ static void SetLevel(int level)
             game_context.player_direction = level2::CharacterStartDirection;
             game_context.level_max_node_connections = level2::MaxNodeConnections;
             game_context.level_max_actions_per_key = level2::MaxActionsPerKey;
+            if (!game_context.manuel_help)
+            {
+                game_context.show_help_2 = true;
+            }
             break;
         case 3:
             game_context.nodes = CreateLevelNodes(level3::NodesData);
@@ -239,6 +250,10 @@ static void SetLevel(int level)
             game_context.player_direction = level3::CharacterStartDirection;
             game_context.level_max_node_connections = level3::MaxNodeConnections;
             game_context.level_max_actions_per_key = level3::MaxActionsPerKey;
+            if (!game_context.manuel_help)
+            {
+                game_context.show_help_2 = true;
+            }
             break;
         case 4:
             game_context.nodes = CreateLevelNodes(level4::NodesData);
@@ -961,7 +976,7 @@ static void NextLevel()
         return;
     }
 }
-static void PlayerDie()
+static void PlayerReset()
 {
     game_context.player_current_key = ConnectorKey::NONE;
     game_context.player_action_index = -1;
@@ -969,21 +984,16 @@ static void PlayerDie()
     game_context.player_tiles_position = game_context.player_start_tiles_position;
     game_context.player_direction = game_context.player_start_direction;
     //game_context.state = GameState::NodesMain;
+    UpdateAllNodes();
+}
+static void PlayerDie()
+{
+    PlayerReset();
+    game_context.death_count++;
+    //game_context.state = GameState::NodesMain;
 }
 static void UpdateCharacterMain()
 {
-    // reset button
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionRecs(ResetButtonRect, game_context.mouse)) {
-        game_context.state = GameState::NodesMain;
-        game_context.player_current_key = ConnectorKey::NONE;
-        game_context.player_action_index = -1;
-        game_context.turn_cooldown = std::chrono::milliseconds::zero();
-        game_context.player_tiles_position = game_context.player_start_tiles_position;
-        game_context.player_direction = game_context.player_start_direction;
-        UpdateAllNodes();
-        return;
-    }
-
     // Update key binds (pressed)
     if (!game_context.player_on_void_tile)
     {
@@ -1109,6 +1119,20 @@ static void UpdateCharacterMain()
         //const Rectangle player_position {px, py, CharacterSpriteWidth, CharacterSpriteHeight};
     }
 
+    // reset button
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionRecs(ResetButtonRect, game_context.mouse)) {
+        game_context.state = GameState::NodesMain;
+        PlayerReset();
+        UpdateAllNodes();
+        return;
+    }
+    if (IsKeyPressed(KEY_BACKSPACE))
+    {
+        PlayerReset();
+        game_context.state = GameState::CharacterMain;
+        game_context.left_helper_text = TextFormat(LeftHelperCharacterTextFormat);
+        return;
+    }
 }
 
 
@@ -1152,13 +1176,16 @@ void UpdateGameLogic() {
     }
     if (game_context.state == GameState::NodesMain || game_context.state == GameState::CharacterMain)
     {
+        // help icon
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionRecs(Help1IconArea, game_context.mouse))
         {
             game_context.show_help_1 = !game_context.show_help_1;
         }
+        // guide line icon
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionRecs(Help2IconArea, game_context.mouse))
         {
             game_context.show_help_2 = !game_context.show_help_2;
+            game_context.manuel_help = true;
         }
     }
 
@@ -1631,6 +1658,30 @@ void UpdateDrawFrame()
             {
                 DrawTexture(game_context.instruction1_texture, InGameHelpInstruction1Area.x, InGameHelpInstruction1Area.y, NeutralTintColor);
                 DrawTexture(game_context.instruction2_texture, InGameHelpInstruction2Area.x, InGameHelpInstruction2Area.y, NeutralTintColor);
+
+                // guidelines help icon
+                const auto help3TextSize = MeasureTextEx(game_context.font, Help3TipString, SmallHelperTextFontSize, SmallHelperTextFontSize/10);
+                DrawTextEx(game_context.font, Help3TipString, {Help3Area.x, Help3Area.y + Help3Area.height/2 - help3TextSize.y/2}, SmallHelperTextFontSize, SmallHelperTextFontSize/10, TextFontColor);
+
+                // controls
+                DrawRectangleRec(Help4Area, BackgroundColor);
+                DrawRectangleLinesEx(Help4Area, BorderLineThick, BorderColor);
+                DrawTextEx(game_context.font, Help4TipString, {Help4Area.x + 4, Help4Area.y + 4}, SmallHelperTextFontSize, SmallHelperTextFontSize/10, TextFontColor);
+                //// control icons
+                DrawTexturePro(game_context.icons_control_sprite_sheet_texture, { static_cast<int>(ControlIcons::LMB)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
+                    {Help4Area.x + 5, Help4Area.y + 4 + 1*SmallHelperTextFontSize + 1, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
+                DrawTexturePro(game_context.icons_control_sprite_sheet_texture, { static_cast<int>(ControlIcons::RMB)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
+                    {Help4Area.x + 5, Help4Area.y + 4 + 2*SmallHelperTextFontSize + 3, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
+                DrawTexturePro(game_context.icons_control_sprite_sheet_texture, { static_cast<int>(ControlIcons::Enter)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
+                        {Help4Area.x + 5, Help4Area.y + 4 + 3*SmallHelperTextFontSize + 6, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
+                DrawTexturePro(game_context.icons_control_sprite_sheet_texture, { static_cast<int>(ControlIcons::Backspace)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
+                        {Help4Area.x + 5, Help4Area.y + 4 + 4*SmallHelperTextFontSize + 8, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
+
+
+                // Tips
+                DrawRectangleRec(Help5Area, BackgroundColor);
+                DrawRectangleLinesEx(Help5Area, BorderLineThick, BorderColor);
+                DrawTextEx(game_context.font, Help5TipString, {Help5Area.x + 4, Help5Area.y + 4}, SmallHelperTextFontSize, SmallHelperTextFontSize/10, TextFontColor);
             }
 
             // help icon 1
@@ -1640,12 +1691,20 @@ void UpdateDrawFrame()
                 {
                     if (game_context.show_help_1)
                     {
-                        return ButtonHoverColor;
+                        return BackgroundColor;
                     }
 
-                    return (CheckCollisionRecs(Help1IconArea, game_context.mouse)) ? ButtonHoverColor : DisabledColor; ///< use disabled color for more subtle coloring
+                    return (CheckCollisionRecs(Help1IconArea, game_context.mouse)) ? ButtonHoverColor : ButtonActiveColor;
                 }();
-                DrawCircleLines(Help1IconArea.x + Help1IconArea.width/2, Help1IconArea.y + Help1IconArea.height/2, HelpIconRadius, buttonColor);
+                const Vector2 icon_pos_center {Help1IconArea.x + Help1IconArea.width/2, Help1IconArea.y + Help1IconArea.height/2};
+                if (game_context.show_help_1)
+                {
+                    DrawCircle(icon_pos_center.x, icon_pos_center.y, HelpIconRadius, ButtonActiveColor);
+                }
+                else
+                {
+                    DrawCircleLines(icon_pos_center.x, icon_pos_center.y, HelpIconRadius, buttonColor);
+                }
                 DrawTextEx(game_context.font, Help1IconString, {Help1IconArea.x + Help1IconArea.width/2 - helpButtonTextSize.x/2, Help1IconArea.y + Help1IconArea.height/2 - helpButtonTextSize.y/2}, HelpIconFontSize, HelpIconFontSize/10, buttonColor);
             }
             // help icon 2
@@ -1655,12 +1714,20 @@ void UpdateDrawFrame()
                 {
                     if (game_context.show_help_2)
                     {
-                        return ButtonHoverColor;
+                        return BackgroundColor;
                     }
 
-                    return (CheckCollisionRecs(Help2IconArea, game_context.mouse)) ? ButtonHoverColor : DisabledColor; ///< use disabled color for more subtle coloring
+                    return (CheckCollisionRecs(Help2IconArea, game_context.mouse)) ? ButtonActiveColor : ButtonHoverColor;
                 }();
-                DrawCircleLines(Help2IconArea.x + Help2IconArea.width/2, Help2IconArea.y + Help2IconArea.height/2, HelpIconRadius, buttonColor);
+                const Vector2 icon_pos_center {Help2IconArea.x + Help2IconArea.width/2, Help2IconArea.y + Help2IconArea.height/2};
+                if (game_context.show_help_2)
+                {
+                    DrawCircle(icon_pos_center.x, icon_pos_center.y, HelpIconRadius, ButtonActiveColor);
+                }
+                else
+                {
+                    DrawCircleLines(icon_pos_center.x, icon_pos_center.y, HelpIconRadius, buttonColor);
+                }
                 DrawTextEx(game_context.font, Help2IconString, {Help2IconArea.x + Help2IconArea.width/2 - helpButtonTextSize.x/2, Help2IconArea.y + Help2IconArea.height/2 - helpButtonTextSize.y/2}, HelpIconFontSize, HelpIconFontSize/10, buttonColor);
             }
         }

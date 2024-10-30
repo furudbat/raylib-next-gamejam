@@ -42,21 +42,24 @@ _Copyright (c) 2022-2024 Ramon Santamaria ([@raysan5](https://twitter.com/raysan
 
 ## NeuroCircuit
 
-![NeuroCircuit](img/banner.png "NeuroCircuit")
+![NeuroCircuit](img/Banner.png "NeuroCircuit")
 
 _Entry for raylib NEXT gamejam, theme: **connections**_
 
 ### Description
 
-**NeuroCircuit** is a simple puzzle-game, where you need to connect Nodes.
+**NeuroCircuit** is a puzzle-game, where you need to connect Neurons.
 
-Link controls and actions so that and use your connected controls to move the character and exit the level.
+Poor Roby fell of a cliff and got their wiring messed up, 
+help them get back home by connecting his key neurons with his action neurons to move to the next levels.
 
 ### Features
 
  - customize your key-binds in a new way
  - chain actions
  - move the character with your customized key-binds
+   - move (Up, Right, Down, Left)
+   - jump in facing direction
  - ~~collect key to open door~~
  - ~~walls and obstetrical in the node selection~~
  - 4+ Levels
@@ -67,8 +70,8 @@ Link controls and actions so that and use your connected controls to move the ch
    - [x] Action can only connect with one Key
    - [x] Action can only have one direct connection with one Key
  - show more help in-game
-   - L-Button: show preview lines
-   - ?-Button: show Nodes help
+   - L-Button: show Guidelines (on Map)
+   - ?-Button: show Neurons help
  - ~~timer and score~~
  - ~~animation, jump animation~~
 
@@ -76,34 +79,32 @@ I didn't finish all the features in time, but at least it works :)
 
 ### Controls
 
-Keyboard/Mouse:
- - click on one Node to select an Action/Key and click on another Node (Action) to connect it
-   - left-click to connect nodes
-   - right-click to remove connections
+#### Keyboard/Mouse:
+
+ - Left click on Neurons to connect
+ - Right click on Neurons to disconnect
+ - Press enter to quick start the level
+ - Press Backspace to quick reset the Level
  - use the connected key-binds to move the character, possible keys:
-   - H
-   - J
-   - K
-   - L
-   - B
-   - G
+   - H, J, K, L, B, G
 
 #### How to play
 
-1. link Nodes for key binding
+1. link Neurons for key binding
 2. press GO when ready
-3. move Character
+3. move Roby
 4. reach door without falling into the void
-   1. press RESET to reconnect Nodes
+   1. press RESET to reconnect Neurons
 
-_You can't connect Nodes while moving your character_
+_You jump in the direction you are facing._  
+_You can turn on/off guidelines next the "?"_
 
 ### Screenshots
 
-![start-screen](screenshots/screenshot000.png "start screen")
-![level-2](screenshots/screenshot001.png "level 2")
-![level-3](screenshots/screenshot002.png "level 3")
-![level-1](screenshots/screenrec001.gif "level 1")
+![start-screen](screenshots/screenshot000.png "Start Screen")
+![level-1](screenshots/screenshot001.png "Level 1")
+![level-2](screenshots/screenshot002.png "Level 2")
+![level-2-g](screenshots/screenrec001.gif "Level 2 GIF")
 
 ### Developers
 
@@ -149,5 +150,6 @@ This project sources are licensed under an unmodified zlib/libpng license, which
 
 #### Links
 
+- https://bsky.app/profile/blacktiger5.bsky.social
 - https://github.com/githubnext/monaspace
 - https://itch.io/jam/raylib-next-gamejam
