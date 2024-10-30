@@ -42,21 +42,17 @@ inline constexpr Rectangle StartButtonRect {
     8*16,
     32,
 };
-inline constexpr Rectangle StartMainCharacterButtonRect {
+inline constexpr Rectangle GoButtonRect {
     RightTextArea.x + 8,
-    RightTextArea.y + RightTextArea.height/2 - 32/2,
+    RightTextArea.y + RightTextArea.height/2 - 50/2,
     8*12,
-    32,
+    50,
 };
-inline constexpr Rectangle ResetMainCharacterButtonRect {
-    RightTextArea.x + 8,
-    RightTextArea.y + RightTextArea.height/2 - 32/2,
-    8*12,
-    32,
-};
+inline constexpr Rectangle ResetButtonRect = GoButtonRect;
+
 inline constexpr Rectangle RightHelperTextAreaRect {
-    ResetMainCharacterButtonRect.x + ResetMainCharacterButtonRect.width + 6,
-    RightTextArea.y + 8,
+    ResetButtonRect.x + ResetButtonRect.width + 6,
+    RightTextArea.y + 10,
     RightTextArea.width/2,
     RightTextArea.height,
 };
@@ -66,29 +62,33 @@ inline constexpr Rectangle WelcomeTextArea {
     LevelArea.x,
     LevelArea.y + 38, LevelArea.width, LevelArea.height/5,
 };
+inline constexpr Rectangle WelcomeFooterTextArea {
+    ConnectorArea.x,
+    ConnectorArea.y + ConnectorArea.height - 32, ConnectorArea.width, ConnectorArea.height/10,
+};
 
 inline constexpr Rectangle HelpInstruction1Area {
-    LevelArea.x + 36,
+    LevelArea.x + 43,
     138, 86, 198,
 };
 inline constexpr Rectangle HelpInstruction2Area {
-    LevelArea.x + LevelArea.width - 86 - 36,
+    LevelArea.x + LevelArea.width - 86 - 43,
     138, 86, 198,
 };
 inline constexpr Rectangle InGameHelpInstruction1Area {
-    LevelArea.x + 36,
+    LevelArea.x + 43,
     56, 86, 198,
 };
 inline constexpr Rectangle InGameHelpInstruction2Area {
-    LevelArea.x + LevelArea.width - 86 - 36,
+    LevelArea.x + LevelArea.width - 86 - 43,
     56, 86, 198,
 };
 
 inline constexpr Rectangle Help1IconArea {
-    LevelArea.x + LevelArea.width - 9*2 - 8, 8, 9*2, 9*2,
+    LevelArea.x + LevelArea.width - 9*2 - 24, 10, 9*2, 9*2,
 };
 inline constexpr Rectangle Help2IconArea {
-    LevelArea.x + LevelArea.width - 9*2 - 8 - 9*2 - 8, 8, 9*2, 9*2,
+    LevelArea.x + LevelArea.width - 9*2 - 8 - 9*2 - 24, 10, 9*2, 9*2,
 };
 
 /// Font size and style (colors)
@@ -98,16 +98,18 @@ inline constexpr int LevelHelperTextFontSize = 16;
 inline constexpr auto TextFontColor = ColorPalette[2];
 inline constexpr auto BackgroundColor = ColorPalette[0];
 inline constexpr auto BorderColor = ColorPalette[2];
-inline constexpr int BorderLineThick = 1;
+inline constexpr int WindowBorderLineThick = 1;
+inline constexpr int BorderLineThick = 2;
 inline constexpr auto ButtonColor = ColorPalette[2];
 inline constexpr auto ButtonHoverColor = ColorPalette[1];
-inline constexpr int ButtonLineThick = 1;
+inline constexpr int ButtonLineThick = 4;
 //// Start
 inline constexpr int TitleTextFontSize = 32;
 inline constexpr int SubTitleTextFontSize = 20;
-inline constexpr int WelcomeTextFontSize = 16;
+inline constexpr int WelcomeTextFontSize = 14;
 inline constexpr int StartButtonTextFontSize = 18;
-inline constexpr int EndTextFontSize = 18;
+inline constexpr int EndTextFontSize = 16;
+inline constexpr int WelcomeFooterTextFontSize = 14;
 //// Nodes
 inline constexpr int NodeFontSize = 16;
 inline constexpr int NodeLineThick = 2;
@@ -116,10 +118,11 @@ inline constexpr auto DisabledColor = ColorPalette[6];
 //// ActionNode
 inline constexpr int ActionNodeSides = 6;
 inline constexpr int ActionNodeRadius = 18;
-inline constexpr int ActionNodeRotation = 0;
+inline constexpr int ActionNodeRadiusThick = 2;
 inline constexpr auto ActionNodeColor = ColorPalette[5];
 //// KeyNode
 inline constexpr int KeyNodeRadius = 18;
+inline constexpr int KeyNodeRadiusThick = 2;
 inline constexpr auto KeyNodeColor = ColorPalette[1];
 //// Map
 inline constexpr int HelpIconFontSize = 12;
@@ -155,11 +158,12 @@ inline constexpr int MaxNodesInLevel = 10;
 /// strings
 constexpr const char* TitleText = "";
 constexpr const char* SubTitleText = "";
-constexpr const char* WelcomeText = R"(Connect Action- and Key-Nodes on the left side
-to bind your keys.
+constexpr const char* WelcomeFooterText = "Copyright (c) 2024 furudbat";
+constexpr const char* WelcomeText = R"(Connect Action- and Key-Nodes on
+the left side to bind your keys.
 
 Left-Click: select and link Nodes
-Right-Click: delete connections from Node
+Right-Click: delete connections
 )";
 constexpr const char* EndText = R"(Thanks for Playing.
 
@@ -174,9 +178,11 @@ raylib NEXT gamejam 2024
 
 
 
+
+
 Credits:
-  furudbat - Programming
-  blacktiger5 - Art, Level Design
+ furudbat - Programming
+ blacktiger5 - Art, Level Design
 
 Copyright (c) 2024 furudbat
 )";
@@ -190,8 +196,8 @@ inline constexpr const char* LeftHelperTextConnectionsFormat = R"(Max. Connectio
 Max. Chain Length: %d
 Click on GO when you are ready.
 )";
-inline constexpr const char* LeftHelperNoConnectionsTextFormat = "Connect Actions and Key-Nodes, then press GO.";
-inline constexpr const char* LeftHelperCharacterTextFormat = "Move your Character and reach the door.";
+inline constexpr const char* LeftHelperNoConnectionsTextFormat = "Connect Actions and Key-Nodes,\nthen press GO.";
+inline constexpr const char* LeftHelperCharacterTextFormat = "Move your Character and \nreach the door.";
 inline constexpr const char* RightHelperTextNoKeyBindsFormat = "No Key-Binds";
 inline constexpr const char* LevelsHelperFormat = "Level: %d";
 ///// Key (enum strings)
