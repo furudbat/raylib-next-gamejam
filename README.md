@@ -40,15 +40,15 @@ _Copyright (c) 2022-2024 Ramon Santamaria ([@raysan5](https://twitter.com/raysan
 
 -----------------------------------
 
-## NeuroCiruit
+## NeuroCircuit
 
-![NeuroCiruit](img/banner.png "NeuroCiruit")
+![NeuroCircuit](img/banner.png "NeuroCircuit")
 
 _Entry for raylib NEXT gamejam, theme: **connections**_
 
 ### Description
 
-**NeuroCiruit** is a simple puzzle-game, you need to connect Nodes.
+**NeuroCircuit** is a simple puzzle-game, you need to connect Nodes.
 
 Link controls and actions so your character is able to move.
 Use your connected controls to move the characters and exit the level.
@@ -60,15 +60,18 @@ Use your connected controls to move the characters and exit the level.
  - move the character with your customized key-binds
  - ~~collect key to open door~~
  - ~~walls and obstetrical in the node selection~~
- - 4 Levels
+ - 3+ Levels
  - **Rules**
    - [x] Only connect Action with Keys or Action with other Actions
    - [x] Crossing (connection) lines with other lines not allowed
    - [x] Crossing (connection) lines with nodes not allowed
    - [x] Action can only connect with one Key
    - [x] Action can only have one direct connection with one Key
- - ~~show more help in-game~~
+ - show more help in-game
+   - L-Button: show preview lines
+   - ?-BButton: show Nodes help
  - ~~timer and score~~
+ - ~~animation, jump animation~~
 
 Didn't finish all the features in time, but at least it works :)
 
@@ -85,9 +88,22 @@ Keyboard/Mouse:
    - D
    - (Space)
 
+#### How to play
+
+1. link Nodes for key binding
+2. press GO when ready
+3. move Character
+4. reach door without falling into the void
+   1. press RESET for going back to connecting Nodes
+
+_You can't connect Nodes while moving your character_
+
 ### Screenshots
 
-_TODO: Show your game to the world, animated GIFs recommended!._
+![start-screen](screenshots/screenshot000.png "start screen")
+![level-2](screenshots/screenshot001.png "level 2")
+![level-3](screenshots/screenshot002.png "level 3")
+![level-1](screenshots/screenrec001.gif "level 1")
 
 ### Developers
 

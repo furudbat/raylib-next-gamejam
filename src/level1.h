@@ -7,7 +7,7 @@ namespace level1
 
 inline constexpr Level_t MapData = {
     // clang-format: off
-    LevelLine_t{3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3},
+    LevelLine_t {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3},
               {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3},
               {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3},
               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3},

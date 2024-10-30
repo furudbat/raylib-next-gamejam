@@ -127,14 +127,14 @@ inline constexpr NodeData KeyNode(Vector2 pos, ConnectorKey key) {
     };
 }
 
-using LevelLine_t = std::array<int, LevelTilesWidth>;
-using Level_t = std::array<LevelLine_t, LevelTilesHeight>;
+using LevelLine_t = std::array<int, LevelMapWidth>;
+using Level_t = std::array<LevelLine_t, LevelMapHeight>;
 
 using GameLevelNodes = std::array<ConnectorNode, MaxNodesInLevel>;
 
 template<size_t N>
 requires (N <= MaxNodesInLevel)
-auto GetLevelNodes(const std::array<NodeData, N>& data)
+auto CreateLevelNodes(const std::array<NodeData, N>& data)
 {
     GameLevelNodes ret;
     for (size_t i = 0; i < data.size(); ++i)

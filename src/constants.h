@@ -13,7 +13,7 @@ inline constexpr std::array<Color, 8> ColorPalette {
     Color{125, 78, 60, 255},    //
     Color{237, 160, 49, 255},   // Action
     Color{130, 130, 139, 255},  // Grey/disabled
-    RAYWHITE,                            // PLACEHOLDER (free)
+    Color{200, 200, 200, 255},  // light grey
 };
 inline constexpr Color NeutralTintColor = WHITE; ///< for rendering texture in full color (art is also restricted to the 8-color rule)
 
@@ -62,11 +62,33 @@ inline constexpr Rectangle RightHelperTextAreaRect {
 };
 
 
+inline constexpr Rectangle WelcomeTextArea {
+    LevelArea.x,
+    LevelArea.y + 38, LevelArea.width, LevelArea.height/5,
+};
+
 inline constexpr Rectangle HelpInstruction1Area {
-    LevelArea.x + 32, 112, 86, 198,
+    LevelArea.x + 36,
+    138, 86, 198,
 };
 inline constexpr Rectangle HelpInstruction2Area {
-    LevelArea.x + LevelArea.width - 86 - 32, 112, 86, 198,
+    LevelArea.x + LevelArea.width - 86 - 36,
+    138, 86, 198,
+};
+inline constexpr Rectangle InGameHelpInstruction1Area {
+    LevelArea.x + 36,
+    56, 86, 198,
+};
+inline constexpr Rectangle InGameHelpInstruction2Area {
+    LevelArea.x + LevelArea.width - 86 - 36,
+    56, 86, 198,
+};
+
+inline constexpr Rectangle Help1IconArea {
+    LevelArea.x + LevelArea.width - 9*2 - 8, 8, 9*2, 9*2,
+};
+inline constexpr Rectangle Help2IconArea {
+    LevelArea.x + LevelArea.width - 9*2 - 8 - 9*2 - 8, 8, 9*2, 9*2,
 };
 
 /// Font size and style (colors)
@@ -100,15 +122,24 @@ inline constexpr auto ActionNodeColor = ColorPalette[5];
 inline constexpr int KeyNodeRadius = 18;
 inline constexpr auto KeyNodeColor = ColorPalette[1];
 //// Map
-//inline constexpr auto TileMapColor = ColorPalette[2];
+inline constexpr int HelpIconFontSize = 12;
+inline constexpr int HelpIconRadius = 9;
+inline constexpr int PreviewLineThick = 2;
+inline constexpr auto PreviewLineColor = ColorPalette[7];
+inline constexpr int PreviewTextFontSize = 12;
+inline constexpr auto MapActiveBorderColor = ColorPalette[5];
+
+inline constexpr float PlayerOnVoidTileScale = 0.8f;
+inline constexpr std::chrono::milliseconds TurnCooldown{15*16};
 
 /// Level Settings
-inline constexpr int LevelTilesWidth = 11;
-inline constexpr int LevelTilesHeight = 10;
-inline constexpr int LevelTilesetWidth = 32;
-inline constexpr int LevelTilesetHeight = 32;
-inline constexpr int MaxLevels = 4;
+inline constexpr int LevelMapWidth = 11;
+inline constexpr int LevelMapHeight = 10;
+inline constexpr int LevelTileWidth = 32;
+inline constexpr int LevelTileHeight = 32;
+inline constexpr int MaxLevels = 5;
 inline constexpr int StartLevel = 1; // for testing
+inline constexpr int JumpFactor = 2; // factor * tile size
 //// Character
 inline constexpr int CharacterSpriteWidth = 32;
 inline constexpr int CharacterSpriteHeight = 32;
@@ -126,6 +157,9 @@ constexpr const char* TitleText = "";
 constexpr const char* SubTitleText = "";
 constexpr const char* WelcomeText = R"(Connect Action- and Key-Nodes on the left side
 to bind your keys.
+
+Left-Click: select and link Nodes
+Right-Click: delete connections from Node
 )";
 constexpr const char* EndText = R"(Thanks for Playing.
 
@@ -147,37 +181,43 @@ Credits:
 Copyright (c) 2024 furudbat
 )";
 //// Buttons
-constexpr const char* WelcomeStartButtonText = "START";
-constexpr const char* GoButtonText = "GO";
-constexpr const char* RestartButtonText = "RESET";
-constexpr const char* EndStartButtonText = "RESTART";
+inline constexpr const char* WelcomeStartButtonText = "START";
+inline constexpr const char* GoButtonText = "GO";
+inline constexpr const char* RestartButtonText = "RESET";
+inline constexpr const char* EndStartButtonText = "RESTART";
 //// Helper Text
-constexpr const char* LeftHelperTextConnectionsFormat = "Max. Connections: %02d/%02d\nMax. Actions: %d";
-constexpr const char* LeftHelperNoConnectionsTextFormat = "Connect Actions and Key-Nodes, before GO.";
-constexpr const char* LeftHelperCharacterTextFormat = "Move your Character and reach the door.";
-constexpr const char* RightHelperTextNoKeyBindsFormat = "No Key-Binds";
-constexpr const char* LevelsHelperFormat = "Level: %d";
+inline constexpr const char* LeftHelperTextConnectionsFormat = R"(Max. Connections: %02d/%02d
+Max. Actions: %d
+Click on GO if you are ready to move on.
+)";
+inline constexpr const char* LeftHelperNoConnectionsTextFormat = "Connect Actions and Key-Nodes, before GO.";
+inline constexpr const char* LeftHelperCharacterTextFormat = "Move your Character and reach the door.";
+inline constexpr const char* RightHelperTextNoKeyBindsFormat = "No Key-Binds";
+inline constexpr const char* LevelsHelperFormat = "Level: %d";
 ///// Key (enum strings)
-constexpr const char* ConnectorKeyWString = "W";
-constexpr const char* ConnectorKeyAString = "A";
-constexpr const char* ConnectorKeySString = "S";
-constexpr const char* ConnectorKeyDString = "D";
-constexpr const char* ConnectorKeySpaceString = "SPACE";
+inline constexpr const char* ConnectorKeyWString = "W";
+inline constexpr const char* ConnectorKeyAString = "A";
+inline constexpr const char* ConnectorKeySString = "S";
+inline constexpr const char* ConnectorKeyDString = "D";
+inline constexpr const char* ConnectorKeySpaceString = "SPACE";
 ///// Key (button strings)
-constexpr const char* NodeKeyWString = "W";
-constexpr const char* NodeKeyAString = "A";
-constexpr const char* NodeKeySString = "S";
-constexpr const char* NodeKeyDString = "D";
-constexpr const char* NodeKeySpaceString = "_";
+inline constexpr const char* NodeKeyWString = "W";
+inline constexpr const char* NodeKeyAString = "A";
+inline constexpr const char* NodeKeySString = "S";
+inline constexpr const char* NodeKeyDString = "D";
+inline constexpr const char* NodeKeySpaceString = "_";
 ///// Action (enum string)
-constexpr const char* ConnectorActionMovementLeftString = "Left";
-constexpr const char* ConnectorActionMovementRightString = "Right";
-constexpr const char* ConnectorActionMovementUpString = "Up";
-constexpr const char* ConnectorActionMovementDownString = "Down";
-constexpr const char* ConnectorActionJumpString = "Jump";
+inline constexpr const char* ConnectorActionMovementLeftString = "Left";
+inline constexpr const char* ConnectorActionMovementRightString = "Right";
+inline constexpr const char* ConnectorActionMovementUpString = "Up";
+inline constexpr const char* ConnectorActionMovementDownString = "Down";
+inline constexpr const char* ConnectorActionJumpString = "Jump";
 ///// Action (button string)
-constexpr const char* NodeActionMovementLeftString = "L";
-constexpr const char* NodeActionMovementRightString = "R";
-constexpr const char* NodeActionMovementUpString = "UP";
-constexpr const char* NodeActionMovementDownString = "DW";
-constexpr const char* NodeActionJumpString = "JP";
+inline constexpr const char* NodeActionMovementLeftString = "L";
+inline constexpr const char* NodeActionMovementRightString = "R";
+inline constexpr const char* NodeActionMovementUpString = "UP";
+inline constexpr const char* NodeActionMovementDownString = "DW";
+inline constexpr const char* NodeActionJumpString = "JP";
+///// misc
+inline constexpr const char* Help1IconString = "?";
+inline constexpr const char* Help2IconString = "L";
