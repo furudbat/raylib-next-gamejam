@@ -40,47 +40,109 @@ _Copyright (c) 2022-2024 Ramon Santamaria ([@raysan5](https://twitter.com/raysan
 
 -----------------------------------
 
-## $(Game Title)
+## NeuroCircuit
 
-![$(Game Title)](screenshots/screenshot000.png "$(Game Title)")
+![NeuroCircuit](img/banner.png "NeuroCircuit")
+
+_Entry for raylib NEXT gamejam, theme: **connections**_
 
 ### Description
 
-$(Your Project Description)
+**NeuroCircuit** is a simple puzzle-game, you need to connect Nodes.
+
+Link controls and actions so your character is able to move.
+Use your connected controls to move the characters and exit the level.
 
 ### Features
 
- - $(Project Feature 01)
- - $(Project Feature 02)
- - $(Project Feature 03)
+ - customize your key-binds in a new way
+ - chain actions
+ - move the character with your customized key-binds
+ - ~~collect key to open door~~
+ - ~~walls and obstetrical in the node selection~~
+ - 3+ Levels
+ - **Rules**
+   - [x] Only connect Action with Keys or Action with other Actions
+   - [x] Crossing (connection) lines with other lines not allowed
+   - [x] Crossing (connection) lines with nodes not allowed
+   - [x] Action can only connect with one Key
+   - [x] Action can only have one direct connection with one Key
+ - show more help in-game
+   - L-Button: show preview lines
+   - ?-BButton: show Nodes help
+ - ~~timer and score~~
+ - ~~animation, jump animation~~
+
+Didn't finish all the features in time, but at least it works :)
 
 ### Controls
 
 Keyboard/Mouse:
- - $(Project Controls 01)
- - $(Project Controls 02)
- - $(Project Controls 03)
+ - click on one Node to select an Action/Key and click on another Node (Action) to connect
+   - left-click to connect nodes
+   - right-click to remove connections
+ - use the connected key-binds to move the character, possible keys:
+   - W
+   - A
+   - S
+   - D
+   - (Space)
+
+#### How to play
+
+1. link Nodes for key binding
+2. press GO when ready
+3. move Character
+4. reach door without falling into the void
+   1. press RESET for going back to connecting Nodes
+
+_You can't connect Nodes while moving your character_
 
 ### Screenshots
 
-_TODO: Show your game to the world, animated GIFs recommended!._
+![start-screen](screenshots/screenshot000.png "start screen")
+![level-2](screenshots/screenshot001.png "level 2")
+![level-3](screenshots/screenshot002.png "level 3")
+![level-1](screenshots/screenrec001.gif "level 1")
 
 ### Developers
 
- - $(Developer 01) - $(Role/Tasks Developed)
- - $(Developer 02) - $(Role/Tasks Developed)
- - $(Developer 03) - $(Role/Tasks Developed)
+ - [@furudbat](https://twitter.com/furudbat) - Developer
+ - [@blacktiger5](https://twitter.com/blacktiger5_) - Art, Level Design
 
 ### Links
 
- - YouTube Gameplay: $(YouTube Link)
  - itch.io Release: $(itch.io Game Page)
- - Steam Release: $(Steam Game Page)
+
+### Build
+
+Made for Desktop and Web.
+
+#### Configure
+
+C++-Compiler (min. C++20) and cmake required.
+
+```bash
+cmake -G Ninja -S . -B build
+```
+
+#### Configure for Web
+
+emscripten and cmake needed, see [Install emscripten toolchain](https://github.com/raysan5/raylib/wiki/Working-for-Web-(HTML5)#1-install-emscripten-toolchain).
+
+```bash
+cmake -DCMAKE_C_COMPILER=emcc -DCMAKE_CXX_COMPILER=em++ -DPLATFORM=Web -DCMAKE_BUILD_TYPE=MinSizeRel -G Ninja -S build-web
+```
+_(tested on arch linux with [emscripten](https://archlinux.org/packages/extra/x86_64/emscripten/) installed)_
+
+#### Build
+
+```bash
+cmake --build build-web --target raylib_game
+```
 
 ### License
 
 This project sources are licensed under an unmodified zlib/libpng license, which is an OSI-certified, BSD-like license that allows static linking with closed source software. Check [LICENSE](LICENSE) for further details.
 
-$(Additional Licenses)
-
-*Copyright (c) $(Year) $(User Name) ($(User Twitter/GitHub Name))*
+*Copyright (c) 2024 furudbat ([@furudbat](https://twitter.com/furudbat))*
