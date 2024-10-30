@@ -25,11 +25,12 @@ enum class ConnectorType
 enum class ConnectorKey : int
 {
     NONE = KEY_NULL,
-    W = KEY_W,
-    A = KEY_A,
-    S = KEY_S,
-    D = KEY_D,
-    Space = KEY_SPACE,
+    B = KEY_B, // Jump1
+    H = KEY_H, // left
+    J = KEY_J, // down
+    K = KEY_K, // up
+    L = KEY_L, // right
+    G = KEY_G, // Jump2
 };
 
 // also sprite indexes

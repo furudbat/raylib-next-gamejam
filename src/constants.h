@@ -175,7 +175,7 @@ raylib NEXT gamejam 2024
 
 
 Credits:
-  furudbat - Developer
+  furudbat - Programming
   blacktiger5 - Art, Level Design
 
 Copyright (c) 2024 furudbat
@@ -187,25 +187,27 @@ inline constexpr const char* RestartButtonText = "RESET";
 inline constexpr const char* EndStartButtonText = "RESTART";
 //// Helper Text
 inline constexpr const char* LeftHelperTextConnectionsFormat = R"(Max. Connections: %02d/%02d
-Max. Actions: %d
-Click on GO if you are ready to move on.
+Max. Chain Length: %d
+Click on GO when you are ready.
 )";
-inline constexpr const char* LeftHelperNoConnectionsTextFormat = "Connect Actions and Key-Nodes, before GO.";
+inline constexpr const char* LeftHelperNoConnectionsTextFormat = "Connect Actions and Key-Nodes, then press GO.";
 inline constexpr const char* LeftHelperCharacterTextFormat = "Move your Character and reach the door.";
 inline constexpr const char* RightHelperTextNoKeyBindsFormat = "No Key-Binds";
 inline constexpr const char* LevelsHelperFormat = "Level: %d";
 ///// Key (enum strings)
-inline constexpr const char* ConnectorKeyWString = "W";
-inline constexpr const char* ConnectorKeyAString = "A";
-inline constexpr const char* ConnectorKeySString = "S";
-inline constexpr const char* ConnectorKeyDString = "D";
-inline constexpr const char* ConnectorKeySpaceString = "SPACE";
+inline constexpr const char* ConnectorKeyHString = "H";
+inline constexpr const char* ConnectorKeyJString = "J";
+inline constexpr const char* ConnectorKeyKString = "K";
+inline constexpr const char* ConnectorKeyLString = "L";
+inline constexpr const char* ConnectorKeyBString = "B";
+inline constexpr const char* ConnectorKeyGString = "G";
 ///// Key (button strings)
-inline constexpr const char* NodeKeyWString = "W";
-inline constexpr const char* NodeKeyAString = "A";
-inline constexpr const char* NodeKeySString = "S";
-inline constexpr const char* NodeKeyDString = "D";
-inline constexpr const char* NodeKeySpaceString = "_";
+inline constexpr const char* NodeKeyHString = "H";
+inline constexpr const char* NodeKeyJString = "J";
+inline constexpr const char* NodeKeyKString = "K";
+inline constexpr const char* NodeKeyLString = "L";
+inline constexpr const char* NodeKeyBString = "B";
+inline constexpr const char* NodeKeyGString = "G";
 ///// Action (enum string)
 inline constexpr const char* ConnectorActionMovementLeftString = "Left";
 inline constexpr const char* ConnectorActionMovementRightString = "Right";

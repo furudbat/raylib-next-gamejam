@@ -48,10 +48,9 @@ _Entry for raylib NEXT gamejam, theme: **connections**_
 
 ### Description
 
-**NeuroCircuit** is a simple puzzle-game, you need to connect Nodes.
+**NeuroCircuit** is a simple puzzle-game, where you need to connect Nodes.
 
-Link controls and actions so your character is able to move.
-Use your connected controls to move the characters and exit the level.
+Link controls and actions so that and use your connected controls to move the character and exit the level.
 
 ### Features
 
@@ -60,7 +59,7 @@ Use your connected controls to move the characters and exit the level.
  - move the character with your customized key-binds
  - ~~collect key to open door~~
  - ~~walls and obstetrical in the node selection~~
- - 3+ Levels
+ - 4+ Levels
  - **Rules**
    - [x] Only connect Action with Keys or Action with other Actions
    - [x] Crossing (connection) lines with other lines not allowed
@@ -69,24 +68,25 @@ Use your connected controls to move the characters and exit the level.
    - [x] Action can only have one direct connection with one Key
  - show more help in-game
    - L-Button: show preview lines
-   - ?-BButton: show Nodes help
+   - ?-Button: show Nodes help
  - ~~timer and score~~
  - ~~animation, jump animation~~
 
-Didn't finish all the features in time, but at least it works :)
+I didn't finish all the features in time, but at least it works :)
 
 ### Controls
 
 Keyboard/Mouse:
- - click on one Node to select an Action/Key and click on another Node (Action) to connect
+ - click on one Node to select an Action/Key and click on another Node (Action) to connect it
    - left-click to connect nodes
    - right-click to remove connections
  - use the connected key-binds to move the character, possible keys:
-   - W
-   - A
-   - S
-   - D
-   - (Space)
+   - H
+   - J
+   - K
+   - L
+   - B
+   - G
 
 #### How to play
 
@@ -94,7 +94,7 @@ Keyboard/Mouse:
 2. press GO when ready
 3. move Character
 4. reach door without falling into the void
-   1. press RESET for going back to connecting Nodes
+   1. press RESET to reconnect Nodes
 
 _You can't connect Nodes while moving your character_
 
@@ -146,3 +146,8 @@ cmake --build build-web --target raylib_game
 This project sources are licensed under an unmodified zlib/libpng license, which is an OSI-certified, BSD-like license that allows static linking with closed source software. Check [LICENSE](LICENSE) for further details.
 
 *Copyright (c) 2024 furudbat ([@furudbat](https://twitter.com/furudbat))*
+
+#### Links
+
+- https://github.com/githubnext/monaspace
+- https://itch.io/jam/raylib-next-gamejam

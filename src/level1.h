@@ -8,15 +8,15 @@ namespace level1
 inline constexpr Level_t MapData = {
     // clang-format: off
     LevelLine_t {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3},
-              {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3},
-              {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3},
-              {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3},
-              {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3},
-              {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3},
-              {4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 3},
-              {3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 3},
-              {3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 3},
-              {3, 3, 3, 3, 3, 3, 3, 0, 1, 0, 3}
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3},
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3},
+                {4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 3},
+                {3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 3},
+                {3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 3},
+                {3, 3, 3, 3, 3, 3, 3, 0, 1, 0, 3}
     // clang-format: on
 };
 
@@ -28,8 +28,8 @@ inline constexpr int MaxActionsPerKey = 2;
 inline constexpr std::array<NodeData, 4> NodesData = {
     ActionNode({120, 100}, ConnectorAction::MovementRight),
     ActionNode({220, 200}, ConnectorAction::MovementDown),
-    KeyNode({280, 100}, ConnectorKey::S),
-    KeyNode({120, 260}, ConnectorKey::D),
+    KeyNode({280, 100}, ConnectorKey::J),
+    KeyNode({120, 260}, ConnectorKey::L),
 };
 
 }

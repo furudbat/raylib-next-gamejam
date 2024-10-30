@@ -463,6 +463,43 @@ bool validConnection(int node_selected1, int node_selected2)
                 return false;
             }
 
+            // check nodes in between lines
+            for (const auto& other_node : game_context.nodes)
+            {
+                if ((other_node.index != node1.index && other_node.index != node2.index) && !other_node.is_selected)
+                {
+                    Vector2 startPos1 = node1.data.position;
+                    Vector2 endPos1 = node2.data.position;
+
+                    const auto other_node_size = [&]()
+                    {
+                        switch (other_node.data.type)
+                        {
+                        case ConnectorType::DISABLED:
+                            break;
+                        case ConnectorType::Action:
+                            return ActionNodeRadius;
+                        case ConnectorType::Key:
+                            return KeyNodeRadius;
+                        }
+                        return 0;
+                    }();
+                    Vector2 topLeft = {other_node.data.position.x - other_node_size/2, other_node.data.position.y - other_node_size/2};
+                    Vector2 topRight = {other_node.data.position.x + other_node_size/2, other_node.data.position.y - other_node_size/2};
+                    Vector2 bottomLeft = {other_node.data.position.x - other_node_size/2, other_node.data.position.y + other_node_size/2};
+                    Vector2 bottomRight = {other_node.data.position.x + other_node_size/2, other_node.data.position.y + other_node_size/2};
+
+                    // check lines with rectangle lines (for both action and key node)
+                    if (CheckCollisionLines(startPos1, endPos1, topLeft, topRight, nullptr) ||
+                        CheckCollisionLines(startPos1, endPos1, topRight, bottomRight, nullptr) ||
+                        CheckCollisionLines(startPos1, endPos1, bottomRight, bottomLeft, nullptr) ||
+                        CheckCollisionLines(startPos1, endPos1, bottomLeft, topLeft, nullptr))
+                    {
+                        return false;
+                    }
+                }
+            }
+
             return true;
         }
     }
@@ -699,11 +736,12 @@ void updateKeyBinds()
             {
             case ConnectorKey::NONE:
                 break;
-            case ConnectorKey::W:
-            case ConnectorKey::S:
-            case ConnectorKey::D:
-            case ConnectorKey::A:
-            case ConnectorKey::Space:
+            case ConnectorKey::H:
+            case ConnectorKey::J:
+            case ConnectorKey::K:
+            case ConnectorKey::L:
+            case ConnectorKey::B:
+            case ConnectorKey::G:
                 game_context.key_binds[node.data.key] = {};
                 break;
             }
@@ -735,20 +773,23 @@ void updateKeyBinds()
         {
         case ConnectorKey::NONE:
             break;
-        case ConnectorKey::W:
-            game_context.right_helper_text += TextFormat("%5s: ", ConnectorKeyWString);
+        case ConnectorKey::H:
+            game_context.right_helper_text += TextFormat("%5s: ", ConnectorKeyHString);
             break;
-        case ConnectorKey::A:
-            game_context.right_helper_text += TextFormat("%5s: ", ConnectorKeyAString);
+        case ConnectorKey::J:
+            game_context.right_helper_text += TextFormat("%5s: ", ConnectorKeyJString);
             break;
-        case ConnectorKey::S:
-            game_context.right_helper_text += TextFormat("%5s: ", ConnectorKeySString);
+        case ConnectorKey::K:
+            game_context.right_helper_text += TextFormat("%5s: ", ConnectorKeyKString);
             break;
-        case ConnectorKey::D:
-            game_context.right_helper_text += TextFormat("%5s: ", ConnectorKeyDString);
+        case ConnectorKey::L:
+            game_context.right_helper_text += TextFormat("%5s: ", ConnectorKeyLString);
             break;
-        case ConnectorKey::Space:
-            game_context.right_helper_text += TextFormat("%5s: ", ConnectorKeySpaceString);
+        case ConnectorKey::B:
+            game_context.right_helper_text += TextFormat("%5s: ", ConnectorKeyBString);
+            break;
+        case ConnectorKey::G:
+            game_context.right_helper_text += TextFormat("%5s: ", ConnectorKeyGString);
             break;
         }
         for (size_t i = 0;i < actions.size();++i)
@@ -1244,16 +1285,18 @@ void RenderNode(const ConnectorNode& node)
                 {
                 case ConnectorKey::NONE:
                     return "";
-                case ConnectorKey::W:
-                    return NodeKeyWString;
-                case ConnectorKey::A:
-                    return NodeKeyAString;
-                case ConnectorKey::S:
-                    return NodeKeySString;
-                case ConnectorKey::D:
-                    return NodeKeyDString;
-                case ConnectorKey::Space:
-                    return NodeKeySpaceString;
+                case ConnectorKey::H:
+                    return NodeKeyHString;
+                case ConnectorKey::J:
+                    return NodeKeyJString;
+                case ConnectorKey::K:
+                    return NodeKeyKString;
+                case ConnectorKey::L:
+                    return NodeKeyLString;
+                case ConnectorKey::B:
+                    return NodeKeyBString;
+                case ConnectorKey::G:
+                    return NodeKeyGString;
                 }
                 return "";
             }();
@@ -1272,11 +1315,12 @@ void RenderNode(const ConnectorNode& node)
             {
             case ConnectorKey::NONE:
                 return;
-            case ConnectorKey::W:
-            case ConnectorKey::A:
-            case ConnectorKey::S:
-            case ConnectorKey::D:
-            case ConnectorKey::Space:
+            case ConnectorKey::B:
+            case ConnectorKey::H:
+            case ConnectorKey::J:
+            case ConnectorKey::K:
+            case ConnectorKey::L:
+            case ConnectorKey::G:
                 if (node.is_selected)
                 {
                     DrawText(innerTextKey, node.data.position.x - innerTextKeySize.x/2, node.data.position.y - innerTextKeySize.y/2, NodeFontSize, BackgroundColor);
@@ -1441,16 +1485,18 @@ void RenderMap()
                             {
                             case ConnectorKey::NONE:
                                 break;
-                            case ConnectorKey::W:
-                                return ConnectorKeyWString;
-                            case ConnectorKey::A:
-                                return ConnectorKeyAString;
-                            case ConnectorKey::S:
-                                return ConnectorKeySString;
-                            case ConnectorKey::D:
-                                return ConnectorKeyDString;
-                            case ConnectorKey::Space:
-                                return ConnectorKeySpaceString;
+                            case ConnectorKey::B:
+                                return ConnectorKeyBString;
+                            case ConnectorKey::H:
+                                return ConnectorKeyHString;
+                            case ConnectorKey::J:
+                                return ConnectorKeyJString;
+                            case ConnectorKey::K:
+                                return ConnectorKeyKString;
+                            case ConnectorKey::L:
+                                return ConnectorKeyLString;
+                            case ConnectorKey::G:
+                                return ConnectorKeyGString;
                             }
                             return "";
                         }();
