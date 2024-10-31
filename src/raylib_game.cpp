@@ -57,6 +57,7 @@ struct GameContext
     Texture2D instruction1_texture{0};
     Texture2D instruction2_texture{0};
     Texture2D tileset_texture{0};
+    Texture2D end_texture{0};
     Texture2D character_sprite_sheet_texture{0};
     Texture2D icons_sprite_sheet_texture{0};
     Texture2D icons_control_sprite_sheet_texture{0};
@@ -168,6 +169,7 @@ int main()
     game_context.character_sprite_sheet_texture = LoadTexture("resources/character.png");
     game_context.icons_sprite_sheet_texture = LoadTexture("resources/icons.png");
     game_context.icons_control_sprite_sheet_texture = LoadTexture("resources/icons-control.png");
+    game_context.end_texture = LoadTexture("resources/end.png");
 
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(UpdateDrawFrame, 60, 1);
@@ -193,6 +195,7 @@ int main()
     UnloadTexture(game_context.character_sprite_sheet_texture);
     UnloadTexture(game_context.icons_sprite_sheet_texture);
     UnloadTexture(game_context.icons_control_sprite_sheet_texture);
+    UnloadTexture(game_context.end_texture);
 
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
@@ -1667,15 +1670,15 @@ void UpdateDrawFrame()
                 DrawRectangleRec(Help4Area, BackgroundColor);
                 DrawRectangleLinesEx(Help4Area, BorderLineThick, BorderColor);
                 DrawTextEx(game_context.font, Help4TipString, {Help4Area.x + 4, Help4Area.y + 4}, SmallHelperTextFontSize, SmallHelperTextFontSize/10, TextFontColor);
-                //// control icons
+                //// controls icons
                 DrawTexturePro(game_context.icons_control_sprite_sheet_texture, { static_cast<int>(ControlIcons::LMB)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
-                    {Help4Area.x + 5, Help4Area.y + 4 + 1*SmallHelperTextFontSize + 1, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
-                DrawTexturePro(game_context.icons_control_sprite_sheet_texture, { static_cast<int>(ControlIcons::RMB)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
                     {Help4Area.x + 5, Help4Area.y + 4 + 2*SmallHelperTextFontSize + 3, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
+                DrawTexturePro(game_context.icons_control_sprite_sheet_texture, { static_cast<int>(ControlIcons::RMB)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
+                    {Help4Area.x + 5, Help4Area.y + 4 + 3*SmallHelperTextFontSize + 5, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
                 DrawTexturePro(game_context.icons_control_sprite_sheet_texture, { static_cast<int>(ControlIcons::Enter)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
-                        {Help4Area.x + 5, Help4Area.y + 4 + 3*SmallHelperTextFontSize + 6, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
-                DrawTexturePro(game_context.icons_control_sprite_sheet_texture, { static_cast<int>(ControlIcons::Backspace)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
                         {Help4Area.x + 5, Help4Area.y + 4 + 4*SmallHelperTextFontSize + 8, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
+                DrawTexturePro(game_context.icons_control_sprite_sheet_texture, { static_cast<int>(ControlIcons::Backspace)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
+                        {Help4Area.x + 5, Help4Area.y + 4 + 5*SmallHelperTextFontSize + 10, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
 
 
                 // Tips
@@ -1745,6 +1748,8 @@ void UpdateDrawFrame()
             const auto startButtonColor = (CheckCollisionRecs(StartButtonRect, game_context.mouse)) ? ButtonHoverColor : ButtonColor;
             DrawRectangleLinesEx(StartButtonRect, ButtonLineThick, startButtonColor);
             DrawTextEx(game_context.font, EndStartButtonText, {StartButtonRect.x + StartButtonRect.width/2 - startButtonTextSize.x/2, StartButtonRect.y + StartButtonRect.height/2 - startButtonTextSize.y/2}, StartButtonTextFontSize, StartButtonTextFontSize/10, startButtonColor);
+
+            DrawTexture(game_context.end_texture, LevelArea.x + LevelArea.width/2 - EndSpriteWidth/2 - 25, LevelArea.y + LevelArea.height/2 - EndSpriteHeight/2 + 15, NeutralTintColor);
         }
 
     EndDrawing();

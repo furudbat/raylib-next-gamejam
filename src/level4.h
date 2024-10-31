@@ -31,7 +31,7 @@ inline constexpr std::array<NodeData, 6> NodesData = {
     ActionNode({155, 200}, ConnectorAction::MovementRight),
     ActionNode({220, 230}, ConnectorAction::Jump),
     KeyNode({90, 100}, ConnectorKey::B),
-    KeyNode({280,135}, ConnectorKey::J),
+    KeyNode({280,135}, ConnectorKey::K),
 };
 
 }

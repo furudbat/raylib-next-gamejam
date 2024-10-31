@@ -164,6 +164,8 @@ inline constexpr int JumpFactor = 2; // factor * tile size
 //// Character
 inline constexpr int CharacterSpriteWidth = 32;
 inline constexpr int CharacterSpriteHeight = 32;
+inline constexpr int EndSpriteWidth = 128;
+inline constexpr int EndSpriteHeight = 128;
 //// Icon
 inline constexpr int ActionIconSpriteWidth = 32;
 inline constexpr int ActionIconSpriteHeight = 32;
@@ -252,6 +254,7 @@ inline constexpr const char* Help1IconString = "?";
 inline constexpr const char* Help2IconString = "L";
 inline constexpr const char* Help3TipString = "Guide->";
 inline constexpr const char* Help5TipString = R"(Hints:
+
 You jump in the
 direction you are
 facing.
@@ -259,8 +262,13 @@ facing.
 You can turn ON
 Guidelines when
 connections exists
+
+Watch your
+"Max. Connections"
+and "Chain Length"
 )";
 inline constexpr const char* Help4TipString = R"(Controls:
+
   on Neurons to connect
   on Neurons to disconnect
   quick start the level

@@ -46,6 +46,8 @@ _Copyright (c) 2022-2024 Ramon Santamaria ([@raysan5](https://twitter.com/raysan
 
 _Entry for raylib NEXT gamejam, theme: **connections**_
 
+https://furudbat.itch.io/neurocircuit
+
 ### Description
 
 **NeuroCircuit** is a puzzle-game, where you need to connect Neurons.
@@ -57,11 +59,11 @@ help them get back home by connecting his key neurons with his action neurons to
 
  - customize your key-binds in a new way
  - chain actions
- - move the character with your customized key-binds
+ - move character with your customized key-binds
    - move (Up, Right, Down, Left)
    - jump in facing direction
  - ~~collect key to open door~~
- - ~~walls and obstetrical in the node selection~~
+ - ~~walls and obstetrical in the Neurons section~~
  - 4+ Levels
  - **Rules**
    - [x] Only connect Action with Keys or Action with other Actions
@@ -71,7 +73,7 @@ help them get back home by connecting his key neurons with his action neurons to
    - [x] Action can only have one direct connection with one Key
  - show more help in-game
    - L-Button: show Guidelines (on Map)
-   - ?-Button: show Neurons help
+   - ?-Button: show Help
  - ~~timer and score~~
  - ~~animation, jump animation~~
 
@@ -113,7 +115,7 @@ _You can turn on/off guidelines next the "?"_
 
 ### Links
 
- - itch.io Release: $(itch.io Game Page)
+ - itch.io Release: https://furudbat.itch.io/neurocircuit
 
 ### Build
 
@@ -148,8 +150,23 @@ This project sources are licensed under an unmodified zlib/libpng license, which
 
 *Copyright (c) 2024 furudbat ([@furudbat](https://twitter.com/furudbat))*
 
-#### Links
+#### More Links
 
 - https://bsky.app/profile/blacktiger5.bsky.social
 - https://github.com/githubnext/monaspace
 - https://itch.io/jam/raylib-next-gamejam
+
+---
+
+
+## Walkthrough (SPOILERS)
+
+### Level 1
+
+### Level 2
+
+### Level 3
+
+### Level 4
+
+### Level 5
