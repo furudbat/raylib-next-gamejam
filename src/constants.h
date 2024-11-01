@@ -5,106 +5,142 @@
 #include <chrono>
 
 /// Color Palette
-inline constexpr std::array<Color, 8> ColorPalette {
-    Color{39, 41, 70, 255},     // Background
-    Color{103, 160, 180, 255},  // Key
-    Color{231, 255, 238, 255},  // Border
-    Color{107, 55, 42, 255},    //
-    Color{125, 78, 60, 255},    //
-    Color{237, 160, 49, 255},   // Action
-    Color{130, 130, 139, 255},  // Grey/disabled
-    Color{200, 200, 200, 255},  // light grey
+inline constexpr std::array<Color, 8> ColorPalette{
+    Color{39, 41, 70, 255}, // Background
+    Color{103, 160, 180, 255}, // Key
+    Color{231, 255, 238, 255}, // Border
+    Color{107, 55, 42, 255}, //
+    Color{125, 78, 60, 255}, //
+    Color{237, 160, 49, 255}, // Action
+    Color{130, 130, 139, 255}, // Grey/disabled
+    Color{200, 200, 200, 255}, // light grey
 };
-inline constexpr Color NeutralTintColor = WHITE; ///< for rendering texture in full color (art is also restricted to the 8-color rule)
+inline constexpr Color NeutralTintColor =
+    WHITE; ///< for rendering texture in full color (art is also restricted to the 8-color rule)
 
 
 /// Rectangle/Areas
-inline constexpr Rectangle ConnectorArea {
-    0, 0, 400, 450,
+inline constexpr Rectangle ConnectorArea{
+    0,
+    0,
+    400,
+    450,
 };
-inline constexpr Rectangle LevelArea {
-    401, 0, 399, 450,
-};
-
-inline constexpr Rectangle LevelMapArea {
-    425, 35, 11*32, 10*32
-};
-inline constexpr Rectangle LeftTextArea {
-    25, 375, 352, 64,
-};
-inline constexpr Rectangle RightTextArea {
-    425, 375, 11*32, 64,
+inline constexpr Rectangle LevelArea{
+    401,
+    0,
+    399,
+    450,
 };
 
-inline constexpr Rectangle StartButtonRect {
-    400 / 2 - 8*16/2,
-    2*450/3 - 32/2,
-    8*16,
+inline constexpr Rectangle LevelMapArea{425, 35, 11 * 32, 10 * 32};
+inline constexpr Rectangle LeftTextArea{
+    25,
+    375,
+    352,
+    64,
+};
+inline constexpr Rectangle RightTextArea{
+    425,
+    375,
+    11 * 32,
+    64,
+};
+
+inline constexpr Rectangle StartButtonRect{
+    400 / 2 - 8 * 16 / 2,
+    2 * 450 / 3 - 32 / 2,
+    8 * 16,
     32,
 };
-inline constexpr Rectangle GoButtonRect {
+inline constexpr Rectangle GoButtonRect{
     RightTextArea.x + 8,
-    RightTextArea.y + RightTextArea.height/2 - 50/2,
-    8*12,
+    RightTextArea.y + RightTextArea.height / 2 - 50 / 2,
+    8 * 12,
     50,
 };
 inline constexpr Rectangle ResetButtonRect = GoButtonRect;
 
-inline constexpr Rectangle RightHelperTextAreaRect {
+inline constexpr Rectangle RightHelperTextAreaRect{
     ResetButtonRect.x + ResetButtonRect.width + 6,
     RightTextArea.y + 10,
-    RightTextArea.width/2,
+    RightTextArea.width / 2,
     RightTextArea.height,
 };
 
 
-inline constexpr Rectangle WelcomeTextArea {
+inline constexpr Rectangle WelcomeTextArea{
     LevelArea.x,
-    LevelArea.y + 38, LevelArea.width, LevelArea.height/5,
+    LevelArea.y + 38,
+    LevelArea.width,
+    LevelArea.height / 5,
 };
-inline constexpr Rectangle WelcomeFooterTextArea {
+inline constexpr Rectangle WelcomeFooterTextArea{
     ConnectorArea.x,
-    ConnectorArea.y + ConnectorArea.height - 32, ConnectorArea.width, ConnectorArea.height/10,
+    ConnectorArea.y + ConnectorArea.height - 32,
+    ConnectorArea.width,
+    ConnectorArea.height / 10,
 };
 
-inline constexpr Rectangle HelpInstruction1Area {
+inline constexpr Rectangle HelpInstruction1Area{
     LevelArea.x + 43,
-    138, 86, 198,
+    138,
+    86,
+    198,
 };
-inline constexpr Rectangle HelpInstruction2Area {
+inline constexpr Rectangle HelpInstruction2Area{
     LevelArea.x + LevelArea.width - 86 - 43,
-    138, 86, 198,
+    138,
+    86,
+    198,
 };
-inline constexpr Rectangle InGameHelpInstruction1Area {
+inline constexpr Rectangle InGameHelpInstruction1Area{
     LevelArea.x + 43,
-    56, 86, 198,
+    56,
+    86,
+    198,
 };
-inline constexpr Rectangle InGameHelpInstruction2Area {
+inline constexpr Rectangle InGameHelpInstruction2Area{
     LevelArea.x + LevelArea.width - 86 - 43,
-    56, 86, 295,
+    56,
+    86,
+    295,
 };
 
 // help
-inline constexpr Rectangle Help1IconArea {
-    LevelArea.x + LevelArea.width - 9*2 - 24, 10, 9*2, 9*2,
+inline constexpr Rectangle Help1IconArea{
+    LevelArea.x + LevelArea.width - 9 * 2 - 24,
+    10,
+    9 * 2,
+    9 * 2,
 };
 // guidelines
-inline constexpr Rectangle Help2IconArea {
-    Help1IconArea.x - 8 - 9*2, 10, 9*2, 9*2,
+inline constexpr Rectangle Help2IconArea{
+    Help1IconArea.x - 8 - 9 * 2,
+    10,
+    9 * 2,
+    9 * 2,
 };
 // guidelines label
-inline constexpr Rectangle Help3Area {
-    Help2IconArea.x - 8 - 9*2 - 24, 10, 24, 18,
+inline constexpr Rectangle Help3Area{
+    Help2IconArea.x - 8 - 9 * 2 - 24,
+    10,
+    24,
+    18,
 };
 // Tips
-inline constexpr Rectangle Help4Area {
+inline constexpr Rectangle Help4Area{
     InGameHelpInstruction1Area.x + 3,
-    InGameHelpInstruction1Area.y + 198 + 4, 86 + 2 + 134, 198/3 + 22,
+    InGameHelpInstruction1Area.y + 198 + 4,
+    86 + 2 + 134,
+    198 / 3 + 22,
 };
 // Tips
-inline constexpr Rectangle Help5Area {
+inline constexpr Rectangle Help5Area{
     InGameHelpInstruction1Area.x + 4 + InGameHelpInstruction1Area.width,
-    InGameHelpInstruction1Area.y + 3, 134, 192,
+    InGameHelpInstruction1Area.y + 3,
+    134,
+    192,
 };
 
 /// Font size and style (colors)
@@ -152,7 +188,7 @@ inline constexpr int PreviewTextFontSize = 12;
 inline constexpr auto MapActiveBorderColor = ColorPalette[5];
 
 inline constexpr float PlayerOnVoidTileScale = 0.8f;
-inline constexpr std::chrono::milliseconds TurnCooldown{15*16};
+inline constexpr std::chrono::milliseconds TurnCooldown{15 * 16};
 
 /// Level Settings
 inline constexpr int LevelMapWidth = 11;

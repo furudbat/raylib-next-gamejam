@@ -1,13 +1,14 @@
-#include "game.h"
 #include "constants.h"
+#include "game.h"
 #include "types.h"
-#include <chrono>
 #include <raylib.h>
 #include <raymath.h>
+#include <chrono>
 
 
 // pre define internal functions
-[[nodiscard]] static bool validPreConnections(GameContext& gameContext, ConnectorNode* clicked_node, ConnectorNode* other_node);
+[[nodiscard]] static bool
+validPreConnections(GameContext& gameContext, ConnectorNode* clicked_node, ConnectorNode* other_node);
 [[nodiscard]] static bool validConnection(GameContext& gameContext, int node_selected1, int node_selected2);
 [[nodiscard]] static bool validPostConnections(GameContext& gameContext, int node_selected1, int node_selected2);
 static bool linkNodes(GameContext& gameContext, int node_selected1, int node_selected2);
@@ -34,16 +35,13 @@ void UpdateMainSceneNodes(GameContext& gameContext)
                 {
                     switch (node.data.type)
                     {
-                    case ConnectorType::DISABLED:
-                        break;
-                    case ConnectorType::Action:
-                        return ActionNodeRadius;
-                    case ConnectorType::Key:
-                        return KeyNodeRadius;
+                        case ConnectorType::DISABLED: break;
+                        case ConnectorType::Action: return ActionNodeRadius;
+                        case ConnectorType::Key: return KeyNodeRadius;
                     }
                     return 0;
                 }();
-                if(CheckCollisionCircleRec(node.data.position, radius, gameContext.mouse))
+                if (CheckCollisionCircleRec(node.data.position, radius, gameContext.mouse))
                 {
                     node.is_selected = true;
                     nodeClicked = &node;
@@ -79,7 +77,6 @@ void UpdateMainSceneNodes(GameContext& gameContext)
         gameContext.nodeSelectionMode = node_selected1 != -1 || node_selected2 != -1;
         if (node_selected1 != -1 && node_selected2 != -1)
         {
-
             UpdateAllNodes(gameContext);
             if (validPreConnections(gameContext, otherNode, nodeClicked))
             {
@@ -106,7 +103,7 @@ void UpdateMainSceneNodes(GameContext& gameContext)
             auto& node = gameContext.nodes[i];
             if (node.data.type != ConnectorType::DISABLED)
             {
-                if(CheckCollisionCircleRec(node.data.position, 16, gameContext.mouse))
+                if (CheckCollisionCircleRec(node.data.position, 16, gameContext.mouse))
                 {
                     unlinkNode(gameContext, node);
                 }
@@ -124,7 +121,8 @@ void UpdateMainSceneNodes(GameContext& gameContext)
     }
 
     if ((IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionRecs(GoButtonRect, gameContext.mouse)) ||
-        IsKeyPressed(KEY_ENTER)) {
+        IsKeyPressed(KEY_ENTER))
+    {
         gameContext.state = GameState::CharacterMain;
         gameContext.leftHelperText = TextFormat(LeftHelperCharacterTextFormat);
         return;
@@ -140,7 +138,7 @@ void UpdateMainSceneMap(GameContext& gameContext)
     // Update key binds (pressed)
     if (!gameContext.playerOnVoidTile)
     {
-        for (const auto& [key, actions]: gameContext.keyBinds)
+        for (const auto& [key, actions] : gameContext.keyBinds)
         {
             if (gameContext.playerActionIndex == -1 && IsKeyPressed(static_cast<int>(key)))
             {
@@ -157,43 +155,34 @@ void UpdateMainSceneMap(GameContext& gameContext)
         {
             if (gameContext.playerActionIndex < gameContext.keyBinds[gameContext.playerCurrentKey].size())
             {
-                switch(gameContext.keyBinds[gameContext.playerCurrentKey][gameContext.playerActionIndex])
+                switch (gameContext.keyBinds[gameContext.playerCurrentKey][gameContext.playerActionIndex])
                 {
-                case ConnectorAction::NONE:
-                    break;
-                case ConnectorAction::MovementLeft:
-                    gameContext.playerTilesPosition.x -= 1;
-                    gameContext.playerDirection = CharacterDirection::Left;
-                    break;
-                case ConnectorAction::MovementRight:
-                    gameContext.playerTilesPosition.x += 1;
-                    gameContext.playerDirection = CharacterDirection::Right;
-                    break;
-                case ConnectorAction::MovementUp:
-                    gameContext.playerTilesPosition.y -= 1;
-                    gameContext.playerDirection = CharacterDirection::Up;
-                    break;
-                case ConnectorAction::MovementDown:
-                    gameContext.playerTilesPosition.y += 1;
-                    gameContext.playerDirection = CharacterDirection::Down;
-                    break;
-                case ConnectorAction::Jump:
-                    switch (gameContext.playerDirection)
-                    {
-                    case CharacterDirection::Right:
-                        gameContext.playerTilesPosition.x += JumpFactor;
+                    case ConnectorAction::NONE: break;
+                    case ConnectorAction::MovementLeft:
+                        gameContext.playerTilesPosition.x -= 1;
+                        gameContext.playerDirection = CharacterDirection::Left;
                         break;
-                    case CharacterDirection::Left:
-                        gameContext.playerTilesPosition.x -= JumpFactor;
+                    case ConnectorAction::MovementRight:
+                        gameContext.playerTilesPosition.x += 1;
+                        gameContext.playerDirection = CharacterDirection::Right;
                         break;
-                    case CharacterDirection::Up:
-                        gameContext.playerTilesPosition.y -= JumpFactor;
+                    case ConnectorAction::MovementUp:
+                        gameContext.playerTilesPosition.y -= 1;
+                        gameContext.playerDirection = CharacterDirection::Up;
                         break;
-                    case CharacterDirection::Down:
-                        gameContext.playerTilesPosition.y += JumpFactor;
+                    case ConnectorAction::MovementDown:
+                        gameContext.playerTilesPosition.y += 1;
+                        gameContext.playerDirection = CharacterDirection::Down;
                         break;
-                    }
-                    break;
+                    case ConnectorAction::Jump:
+                        switch (gameContext.playerDirection)
+                        {
+                            case CharacterDirection::Right: gameContext.playerTilesPosition.x += JumpFactor; break;
+                            case CharacterDirection::Left: gameContext.playerTilesPosition.x -= JumpFactor; break;
+                            case CharacterDirection::Up: gameContext.playerTilesPosition.y -= JumpFactor; break;
+                            case CharacterDirection::Down: gameContext.playerTilesPosition.y += JumpFactor; break;
+                        }
+                        break;
                 }
             }
             gameContext.playerActionIndex++;
@@ -210,22 +199,25 @@ void UpdateMainSceneMap(GameContext& gameContext)
     {
         const auto* playerMapTileIndex = [&]() -> const int*
         {
-            if (gameContext.mapData != nullptr && (
-                gameContext.playerTilesPosition.x >= 0 && gameContext.playerTilesPosition.y >= 0 &&
-                gameContext.playerTilesPosition.y < gameContext.mapData->size() && gameContext.playerTilesPosition.x < (*gameContext.mapData)[gameContext.playerTilesPosition.y].size()))
+            if (gameContext.mapData != nullptr &&
+                (gameContext.playerTilesPosition.x >= 0 && gameContext.playerTilesPosition.y >= 0 &&
+                 gameContext.playerTilesPosition.y < gameContext.mapData->size() &&
+                 gameContext.playerTilesPosition.x < (*gameContext.mapData)[gameContext.playerTilesPosition.y].size()))
             {
                 return &(*gameContext.mapData)[gameContext.playerTilesPosition.y][gameContext.playerTilesPosition.x];
             }
             return nullptr;
         }();
-        const auto playerMapTile = (playerMapTileIndex != nullptr) ? static_cast<TileSet>(*playerMapTileIndex) : TileSet::Void1;
+        const auto playerMapTile =
+            (playerMapTileIndex != nullptr) ? static_cast<TileSet>(*playerMapTileIndex) : TileSet::Void1;
         gameContext.playerOnVoidTile = playerMapTile == TileSet::Void1 || playerMapTile == TileSet::Void2;
         gameContext.playerOnDoorTile = playerMapTile == TileSet::Door;
 
         // reset action (animation)
         if (gameContext.playerCurrentKey != ConnectorKey::NONE &&
             (gameContext.playerActionIndex > gameContext.keyBinds[gameContext.playerCurrentKey].size() ||
-             gameContext.keyBinds[gameContext.playerCurrentKey].size() == 1)) // if only have ONE action, no need for waiting the next action
+             gameContext.keyBinds[gameContext.playerCurrentKey].size() ==
+                 1)) // if only have ONE action, no need for waiting the next action
         {
             gameContext.playerCurrentKey = ConnectorKey::NONE;
             gameContext.playerActionIndex = -1;
@@ -242,28 +234,24 @@ void UpdateMainSceneMap(GameContext& gameContext)
         {
             switch (playerMapTile)
             {
-            case TileSet::Floor:
-                break;
-            case TileSet::Door:
-                NextLevel(gameContext);
-                break;
-            case TileSet::Key:
-                /// @TODO: collect key
+                case TileSet::Floor: break;
+                case TileSet::Door: NextLevel(gameContext); break;
+                case TileSet::Key:
+                    /// @TODO: collect key
                     break;
-            case TileSet::Void1:
-            case TileSet::Void2:
-                playerDie(gameContext);
-                break;
+                case TileSet::Void1:
+                case TileSet::Void2: playerDie(gameContext); break;
             }
         }
 
-        //const auto& px = LevelMapArea.x + game_context.player_tiles_position.x*CharacterSpriteWidth;
-        //const auto& py = LevelMapArea.y + game_context.player_tiles_position.y*CharacterSpriteHeight;
-        //const Rectangle player_position {px, py, CharacterSpriteWidth, CharacterSpriteHeight};
+        // const auto& px = LevelMapArea.x + game_context.player_tiles_position.x*CharacterSpriteWidth;
+        // const auto& py = LevelMapArea.y + game_context.player_tiles_position.y*CharacterSpriteHeight;
+        // const Rectangle player_position {px, py, CharacterSpriteWidth, CharacterSpriteHeight};
     }
 
     // reset button
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionRecs(ResetButtonRect, gameContext.mouse)) {
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionRecs(ResetButtonRect, gameContext.mouse))
+    {
         gameContext.state = GameState::NodesMain;
         playerReset(gameContext);
         UpdateAllNodes(gameContext);
@@ -282,7 +270,8 @@ void UpdateMainSceneMap(GameContext& gameContext)
 static void renderNodeLines(GameContext& gameContext, const ConnectorNode& node);
 static void renderNode(GameContext& gameContext, const ConnectorNode& node);
 static void renderMap(GameContext& gameContext);
-void RenderMainScene(GameContext& gameContext) {
+void RenderMainScene(GameContext& gameContext)
+{
     DrawRectangleLinesEx(LeftTextArea, BorderLineThick, BorderColor);
     DrawRectangleLinesEx(RightTextArea, BorderLineThick, BorderColor);
 
@@ -309,65 +298,187 @@ void RenderMainScene(GameContext& gameContext) {
     }
 
     // level text
-    const auto startButtonTextSize = MeasureTextEx(gameContext.font, gameContext.levelHelperText.c_str(), LevelHelperTextFontSize, LevelHelperTextFontSize/FontSpacingFactor);
-    DrawTextEx(gameContext.font, gameContext.levelHelperText.c_str(), {LevelArea.x + LevelArea.width/2 - startButtonTextSize.x/2, LevelArea.y + 8}, LevelHelperTextFontSize, LevelHelperTextFontSize/FontSpacingFactor, TextFontColor);
+    const auto startButtonTextSize = MeasureTextEx(
+        gameContext.font,
+        gameContext.levelHelperText.c_str(),
+        LevelHelperTextFontSize,
+        LevelHelperTextFontSize / FontSpacingFactor);
+    DrawTextEx(
+        gameContext.font,
+        gameContext.levelHelperText.c_str(),
+        {LevelArea.x + LevelArea.width / 2 - startButtonTextSize.x / 2, LevelArea.y + 8},
+        LevelHelperTextFontSize,
+        LevelHelperTextFontSize / FontSpacingFactor,
+        TextFontColor);
 
     // helper text (connections, node info)
-    DrawTextEx(gameContext.font, gameContext.leftHelperText.c_str(), {LeftTextArea.x + 8, LeftTextArea.y + 8}, HelperTextFontSize, HelperTextFontSize/FontSpacingFactor, TextFontColor);
+    DrawTextEx(
+        gameContext.font,
+        gameContext.leftHelperText.c_str(),
+        {LeftTextArea.x + 8, LeftTextArea.y + 8},
+        HelperTextFontSize,
+        HelperTextFontSize / FontSpacingFactor,
+        TextFontColor);
 
     // Main GO Button
-    if (gameContext.state == GameState::NodesMain) {
-        const auto goButtonTextSize = MeasureTextEx(gameContext.font, GoButtonText, StartButtonTextFontSize, StartButtonTextFontSize/FontSpacingFactor);
+    if (gameContext.state == GameState::NodesMain)
+    {
+        const auto goButtonTextSize = MeasureTextEx(
+            gameContext.font,
+            GoButtonText,
+            StartButtonTextFontSize,
+            StartButtonTextFontSize / FontSpacingFactor);
         const auto buttonColor = (CheckCollisionRecs(GoButtonRect, gameContext.mouse)) ? ButtonHoverColor : ButtonColor;
         DrawRectangleLinesEx(GoButtonRect, ButtonLineThick, buttonColor);
-        DrawTextEx(gameContext.font, GoButtonText, {GoButtonRect.x + GoButtonRect.width/2 - goButtonTextSize.x/2, GoButtonRect.y + GoButtonRect.height/2 - goButtonTextSize.y/2}, StartButtonTextFontSize, StartButtonTextFontSize/FontSpacingFactor, buttonColor);
+        DrawTextEx(
+            gameContext.font,
+            GoButtonText,
+            {GoButtonRect.x + GoButtonRect.width / 2 - goButtonTextSize.x / 2,
+             GoButtonRect.y + GoButtonRect.height / 2 - goButtonTextSize.y / 2},
+            StartButtonTextFontSize,
+            StartButtonTextFontSize / FontSpacingFactor,
+            buttonColor);
     }
     // Character Reset Button
-    if (gameContext.state == GameState::CharacterMain) {
-        const auto restartButtonTextSize = MeasureTextEx(gameContext.font, RestartButtonText, StartButtonTextFontSize, StartButtonTextFontSize/FontSpacingFactor);
-        const auto buttonColor = (CheckCollisionRecs(ResetButtonRect, gameContext.mouse)) ? ButtonHoverColor : ButtonColor;
+    if (gameContext.state == GameState::CharacterMain)
+    {
+        const auto restartButtonTextSize = MeasureTextEx(
+            gameContext.font,
+            RestartButtonText,
+            StartButtonTextFontSize,
+            StartButtonTextFontSize / FontSpacingFactor);
+        const auto buttonColor =
+            (CheckCollisionRecs(ResetButtonRect, gameContext.mouse)) ? ButtonHoverColor : ButtonColor;
         DrawRectangleLinesEx(ResetButtonRect, ButtonLineThick, buttonColor);
-        DrawTextEx(gameContext.font, RestartButtonText, {ResetButtonRect.x + ResetButtonRect.width/2 - restartButtonTextSize.x/2, ResetButtonRect.y + GoButtonRect.height/2 - restartButtonTextSize.y/2}, StartButtonTextFontSize, StartButtonTextFontSize/FontSpacingFactor, buttonColor);
+        DrawTextEx(
+            gameContext.font,
+            RestartButtonText,
+            {ResetButtonRect.x + ResetButtonRect.width / 2 - restartButtonTextSize.x / 2,
+             ResetButtonRect.y + GoButtonRect.height / 2 - restartButtonTextSize.y / 2},
+            StartButtonTextFontSize,
+            StartButtonTextFontSize / FontSpacingFactor,
+            buttonColor);
     }
 
     // helper text (actions, key binds)
-    DrawTextEx(gameContext.font, gameContext.rightHelperText.c_str(), {RightHelperTextAreaRect.x, RightHelperTextAreaRect.y}, HelperTextFontSize, HelperTextFontSize/FontSpacingFactor, TextFontColor);
+    DrawTextEx(
+        gameContext.font,
+        gameContext.rightHelperText.c_str(),
+        {RightHelperTextAreaRect.x, RightHelperTextAreaRect.y},
+        HelperTextFontSize,
+        HelperTextFontSize / FontSpacingFactor,
+        TextFontColor);
 
     renderMap(gameContext);
 
     if (gameContext.showHelp1)
     {
-        DrawTexture(gameContext.instruction1Texture, InGameHelpInstruction1Area.x, InGameHelpInstruction1Area.y, NeutralTintColor);
-        DrawTexture(gameContext.instruction2Texture, InGameHelpInstruction2Area.x, InGameHelpInstruction2Area.y, NeutralTintColor);
+        DrawTexture(
+            gameContext.instruction1Texture,
+            InGameHelpInstruction1Area.x,
+            InGameHelpInstruction1Area.y,
+            NeutralTintColor);
+        DrawTexture(
+            gameContext.instruction2Texture,
+            InGameHelpInstruction2Area.x,
+            InGameHelpInstruction2Area.y,
+            NeutralTintColor);
 
         // guidelines help icon
-        const auto help3TextSize = MeasureTextEx(gameContext.font, Help3TipString, SmallHelperTextFontSize, SmallHelperTextFontSize/FontSpacingFactor);
-        DrawTextEx(gameContext.font, Help3TipString, {Help3Area.x, Help3Area.y + Help3Area.height/2 - help3TextSize.y/2}, SmallHelperTextFontSize, SmallHelperTextFontSize/FontSpacingFactor, TextFontColor);
+        const auto help3TextSize = MeasureTextEx(
+            gameContext.font,
+            Help3TipString,
+            SmallHelperTextFontSize,
+            SmallHelperTextFontSize / FontSpacingFactor);
+        DrawTextEx(
+            gameContext.font,
+            Help3TipString,
+            {Help3Area.x, Help3Area.y + Help3Area.height / 2 - help3TextSize.y / 2},
+            SmallHelperTextFontSize,
+            SmallHelperTextFontSize / FontSpacingFactor,
+            TextFontColor);
 
         // controls
         DrawRectangleRec(Help4Area, BackgroundColor);
         DrawRectangleLinesEx(Help4Area, BorderLineThick, BorderColor);
-        DrawTextEx(gameContext.font, Help4TipString, {Help4Area.x + 7, Help4Area.y + 4}, SmallHelperTextFontSize, SmallHelperTextFontSize/FontSpacingFactor, TextFontColor);
+        DrawTextEx(
+            gameContext.font,
+            Help4TipString,
+            {Help4Area.x + 7, Help4Area.y + 4},
+            SmallHelperTextFontSize,
+            SmallHelperTextFontSize / FontSpacingFactor,
+            TextFontColor);
         //// controls icons
-        DrawTexturePro(gameContext.iconsControlSpriteSheetTexture, { static_cast<int>(ControlIcons::LMB)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
-            {Help4Area.x + 4, Help4Area.y + 4 + 2*SmallHelperTextFontSize + 3, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
-        DrawTexturePro(gameContext.iconsControlSpriteSheetTexture, { static_cast<int>(ControlIcons::RMB)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
-            {Help4Area.x + 4, Help4Area.y + 4 + 3*SmallHelperTextFontSize + 5, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
-        DrawTexturePro(gameContext.iconsControlSpriteSheetTexture, { static_cast<int>(ControlIcons::Enter)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
-                {Help4Area.x + 4, Help4Area.y + 4 + 4*SmallHelperTextFontSize + 8, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
-        DrawTexturePro(gameContext.iconsControlSpriteSheetTexture, { static_cast<int>(ControlIcons::Backspace)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
-                {Help4Area.x + 4, Help4Area.y + 4 + 5*SmallHelperTextFontSize + 10, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
+        DrawTexturePro(
+            gameContext.iconsControlSpriteSheetTexture,
+            {static_cast<int>(ControlIcons::LMB) * ControlIconSpriteWidth,
+             0,
+             ControlIconSpriteWidth,
+             ControlIconSpriteHeight},
+            {Help4Area.x + 4,
+             Help4Area.y + 4 + 2 * SmallHelperTextFontSize + 3,
+             ControlIconSpriteWidth,
+             ControlIconSpriteHeight},
+            {0, 0},
+            0,
+            NeutralTintColor);
+        DrawTexturePro(
+            gameContext.iconsControlSpriteSheetTexture,
+            {static_cast<int>(ControlIcons::RMB) * ControlIconSpriteWidth,
+             0,
+             ControlIconSpriteWidth,
+             ControlIconSpriteHeight},
+            {Help4Area.x + 4,
+             Help4Area.y + 4 + 3 * SmallHelperTextFontSize + 5,
+             ControlIconSpriteWidth,
+             ControlIconSpriteHeight},
+            {0, 0},
+            0,
+            NeutralTintColor);
+        DrawTexturePro(
+            gameContext.iconsControlSpriteSheetTexture,
+            {static_cast<int>(ControlIcons::Enter) * ControlIconSpriteWidth,
+             0,
+             ControlIconSpriteWidth,
+             ControlIconSpriteHeight},
+            {Help4Area.x + 4,
+             Help4Area.y + 4 + 4 * SmallHelperTextFontSize + 8,
+             ControlIconSpriteWidth,
+             ControlIconSpriteHeight},
+            {0, 0},
+            0,
+            NeutralTintColor);
+        DrawTexturePro(
+            gameContext.iconsControlSpriteSheetTexture,
+            {static_cast<int>(ControlIcons::Backspace) * ControlIconSpriteWidth,
+             0,
+             ControlIconSpriteWidth,
+             ControlIconSpriteHeight},
+            {Help4Area.x + 4,
+             Help4Area.y + 4 + 5 * SmallHelperTextFontSize + 10,
+             ControlIconSpriteWidth,
+             ControlIconSpriteHeight},
+            {0, 0},
+            0,
+            NeutralTintColor);
 
 
         // Tips
         DrawRectangleRec(Help5Area, BackgroundColor);
         DrawRectangleLinesEx(Help5Area, BorderLineThick, BorderColor);
-        DrawTextEx(gameContext.font, Help5TipString, {Help5Area.x + 4, Help5Area.y + 4}, SmallHelperTextFontSize, SmallHelperTextFontSize/FontSpacingFactor, TextFontColor);
+        DrawTextEx(
+            gameContext.font,
+            Help5TipString,
+            {Help5Area.x + 4, Help5Area.y + 4},
+            SmallHelperTextFontSize,
+            SmallHelperTextFontSize / FontSpacingFactor,
+            TextFontColor);
     }
 
     // help icon 1
     {
-        const auto helpButtonTextSize = MeasureTextEx(gameContext.font, Help1IconString, HelpIconFontSize, HelpIconFontSize/FontSpacingFactor);
+        const auto helpButtonTextSize =
+            MeasureTextEx(gameContext.font, Help1IconString, HelpIconFontSize, HelpIconFontSize / FontSpacingFactor);
         const auto buttonColor = [&]()
         {
             if (gameContext.showHelp1)
@@ -377,7 +488,9 @@ void RenderMainScene(GameContext& gameContext) {
 
             return (CheckCollisionRecs(Help1IconArea, gameContext.mouse)) ? ButtonHoverColor : ButtonActiveColor;
         }();
-        const Vector2 icon_pos_center {Help1IconArea.x + Help1IconArea.width/2, Help1IconArea.y + Help1IconArea.height/2};
+        const Vector2 icon_pos_center{
+            Help1IconArea.x + Help1IconArea.width / 2,
+            Help1IconArea.y + Help1IconArea.height / 2};
         if (gameContext.showHelp1)
         {
             DrawCircle(icon_pos_center.x, icon_pos_center.y, HelpIconRadius, ButtonActiveColor);
@@ -386,11 +499,19 @@ void RenderMainScene(GameContext& gameContext) {
         {
             DrawCircleLines(icon_pos_center.x, icon_pos_center.y, HelpIconRadius, buttonColor);
         }
-        DrawTextEx(gameContext.font, Help1IconString, {Help1IconArea.x + Help1IconArea.width/2 - helpButtonTextSize.x/2, Help1IconArea.y + Help1IconArea.height/2 - helpButtonTextSize.y/2}, HelpIconFontSize, HelpIconFontSize/FontSpacingFactor, buttonColor);
+        DrawTextEx(
+            gameContext.font,
+            Help1IconString,
+            {Help1IconArea.x + Help1IconArea.width / 2 - helpButtonTextSize.x / 2,
+             Help1IconArea.y + Help1IconArea.height / 2 - helpButtonTextSize.y / 2},
+            HelpIconFontSize,
+            HelpIconFontSize / FontSpacingFactor,
+            buttonColor);
     }
     // help icon 2
     {
-        const auto helpButtonTextSize = MeasureTextEx(gameContext.font, Help2IconString, HelpIconFontSize, HelpIconFontSize/FontSpacingFactor);
+        const auto helpButtonTextSize =
+            MeasureTextEx(gameContext.font, Help2IconString, HelpIconFontSize, HelpIconFontSize / FontSpacingFactor);
         const auto buttonColor = [&]()
         {
             if (gameContext.showHelp2)
@@ -400,7 +521,9 @@ void RenderMainScene(GameContext& gameContext) {
 
             return (CheckCollisionRecs(Help2IconArea, gameContext.mouse)) ? ButtonActiveColor : ButtonHoverColor;
         }();
-        const Vector2 icon_pos_center {Help2IconArea.x + Help2IconArea.width/2, Help2IconArea.y + Help2IconArea.height/2};
+        const Vector2 icon_pos_center{
+            Help2IconArea.x + Help2IconArea.width / 2,
+            Help2IconArea.y + Help2IconArea.height / 2};
         if (gameContext.showHelp2)
         {
             DrawCircle(icon_pos_center.x, icon_pos_center.y, HelpIconRadius, ButtonActiveColor);
@@ -409,7 +532,14 @@ void RenderMainScene(GameContext& gameContext) {
         {
             DrawCircleLines(icon_pos_center.x, icon_pos_center.y, HelpIconRadius, buttonColor);
         }
-        DrawTextEx(gameContext.font, Help2IconString, {Help2IconArea.x + Help2IconArea.width/2 - helpButtonTextSize.x/2, Help2IconArea.y + Help2IconArea.height/2 - helpButtonTextSize.y/2}, HelpIconFontSize, HelpIconFontSize/FontSpacingFactor, buttonColor);
+        DrawTextEx(
+            gameContext.font,
+            Help2IconString,
+            {Help2IconArea.x + Help2IconArea.width / 2 - helpButtonTextSize.x / 2,
+             Help2IconArea.y + Help2IconArea.height / 2 - helpButtonTextSize.y / 2},
+            HelpIconFontSize,
+            HelpIconFontSize / FontSpacingFactor,
+            buttonColor);
     }
 }
 
@@ -428,7 +558,8 @@ bool validPreConnections(GameContext& gameContext, ConnectorNode* clicked_node, 
             {
                 for (const auto& connectedNodeIndex : node.direct_connections)
                 {
-                    if (connectedNodeIndex != -1 && connectedNodeIndex != other_node->index && connectedNodeIndex != clicked_node->index)
+                    if (connectedNodeIndex != -1 && connectedNodeIndex != other_node->index &&
+                        connectedNodeIndex != clicked_node->index)
                     {
                         const auto& connectedNode = gameContext.nodes[connectedNodeIndex];
                         const Vector2 startPos2 = node.data.position;
@@ -455,7 +586,11 @@ bool validConnection(GameContext& gameContext, int node_selected1, int node_sele
 
         TraceLog(LOG_DEBUG, "Node1: type: %d, connected_counter: %d", node1.data.type, node1.connected_counter);
         TraceLog(LOG_DEBUG, "Node2: type: %d, connected_counter: %d", node2.data.type, node2.connected_counter);
-        TraceLog(LOG_DEBUG, "Level: level_connections: %d/%d ", gameContext.levelConnections, gameContext.levelMaxNodeConnections);
+        TraceLog(
+            LOG_DEBUG,
+            "Level: level_connections: %d/%d ",
+            gameContext.levelConnections,
+            gameContext.levelMaxNodeConnections);
 
         if (node1.data.type != node2.data.type ||
             (node1.data.type == ConnectorType::Action && node2.data.type == ConnectorType::Action))
@@ -481,19 +616,24 @@ bool validConnection(GameContext& gameContext, int node_selected1, int node_sele
                     {
                         switch (otherNode.data.type)
                         {
-                        case ConnectorType::DISABLED:
-                            break;
-                        case ConnectorType::Action:
-                            return ActionNodeRadius;
-                        case ConnectorType::Key:
-                            return KeyNodeRadius;
+                            case ConnectorType::DISABLED: break;
+                            case ConnectorType::Action: return ActionNodeRadius;
+                            case ConnectorType::Key: return KeyNodeRadius;
                         }
                         return 0;
                     }();
-                    const Vector2 topLeft = {otherNode.data.position.x - otherNodeSize/2, otherNode.data.position.y - otherNodeSize/2};
-                    const Vector2 topRight = {otherNode.data.position.x + otherNodeSize/2, otherNode.data.position.y - otherNodeSize/2};
-                    const Vector2 bottomLeft = {otherNode.data.position.x - otherNodeSize/2, otherNode.data.position.y + otherNodeSize/2};
-                    const Vector2 bottomRight = {otherNode.data.position.x + otherNodeSize/2, otherNode.data.position.y + otherNodeSize/2};
+                    const Vector2 topLeft = {
+                        otherNode.data.position.x - otherNodeSize / 2,
+                        otherNode.data.position.y - otherNodeSize / 2};
+                    const Vector2 topRight = {
+                        otherNode.data.position.x + otherNodeSize / 2,
+                        otherNode.data.position.y - otherNodeSize / 2};
+                    const Vector2 bottomLeft = {
+                        otherNode.data.position.x - otherNodeSize / 2,
+                        otherNode.data.position.y + otherNodeSize / 2};
+                    const Vector2 bottomRight = {
+                        otherNode.data.position.x + otherNodeSize / 2,
+                        otherNode.data.position.y + otherNodeSize / 2};
 
                     // check lines with rectangle lines (for both action and key node)
                     if (CheckCollisionLines(startPos1, endPos1, topLeft, topRight, nullptr) ||
@@ -521,7 +661,7 @@ bool validPostConnections(GameContext& gameContext, int node_selected1, int node
     }
 
     // check max actions
-    for(const auto& [key, actions] : gameContext.keyBinds)
+    for (const auto& [key, actions] : gameContext.keyBinds)
     {
         if (actions.size() > gameContext.levelMaxActionsPerKey)
         {
@@ -601,19 +741,18 @@ bool validPostConnections(GameContext& gameContext, int node_selected1, int node
                     {
                         switch (node2.data.type)
                         {
-                        case ConnectorType::DISABLED:
-                            break;
-                        case ConnectorType::Action:
-                            return ActionNodeRadius;
-                        case ConnectorType::Key:
-                            return KeyNodeRadius;
+                            case ConnectorType::DISABLED: break;
+                            case ConnectorType::Action: return ActionNodeRadius;
+                            case ConnectorType::Key: return KeyNodeRadius;
                         }
                         return 0;
                     }();
-                    Vector2 topLeft = {node2.data.position.x - node2Size/2, node2.data.position.y - node2Size/2};
-                    Vector2 topRight = {node2.data.position.x + node2Size/2, node2.data.position.y - node2Size/2};
-                    Vector2 bottomLeft = {node2.data.position.x - node2Size/2, node2.data.position.y + node2Size/2};
-                    Vector2 bottomRight = {node2.data.position.x + node2Size/2, node2.data.position.y + node2Size/2};
+                    Vector2 topLeft = {node2.data.position.x - node2Size / 2, node2.data.position.y - node2Size / 2};
+                    Vector2 topRight = {node2.data.position.x + node2Size / 2, node2.data.position.y - node2Size / 2};
+                    Vector2 bottomLeft = {node2.data.position.x - node2Size / 2, node2.data.position.y + node2Size / 2};
+                    Vector2 bottomRight = {
+                        node2.data.position.x + node2Size / 2,
+                        node2.data.position.y + node2Size / 2};
 
                     // check lines with rectangle lines (for both action and key node)
                     if (CheckCollisionLines(startPos1, endPos1, topLeft, topRight, nullptr) ||
@@ -719,14 +858,14 @@ void playerReset(GameContext& gameContext)
     gameContext.turnCooldown = std::chrono::milliseconds::zero();
     gameContext.playerTilesPosition = gameContext.playerStartTilesPosition;
     gameContext.playerDirection = gameContext.playerStartDirection;
-    //game_context.state = GameState::NodesMain;
+    // game_context.state = GameState::NodesMain;
     UpdateAllNodes(gameContext);
 }
 void playerDie(GameContext& gameContext)
 {
     playerReset(gameContext);
     gameContext.deathCount++;
-    //game_context.state = GameState::NodesMain;
+    // game_context.state = GameState::NodesMain;
 }
 
 
@@ -752,151 +891,182 @@ void renderNode(GameContext& gameContext, const ConnectorNode& node)
     // render Node
     switch (node.data.type)
     {
-    case ConnectorType::DISABLED:
-        return;
-    case ConnectorType::Action:
-    {
-        auto actionColor = (gameContext.state == GameState::NodesMain) ? ActionNodeColor : DisabledColor;
-        const char* innerTextAction = [&]()
+        case ConnectorType::DISABLED: return;
+        case ConnectorType::Action:
         {
+            auto actionColor = (gameContext.state == GameState::NodesMain) ? ActionNodeColor : DisabledColor;
+            const char* innerTextAction = [&]()
+            {
 #if !defined(PLATFORM_WEB)
 #ifndef NDEBUG
-            if (IsKeyDown(KEY_F1))
-            {
-                // debug
-                return TextFormat("%i", node.index);
-            }
-#endif
-#endif
-
-            switch (node.data.action)
-            {
-            case ConnectorAction::NONE:
-                return "";
-            case ConnectorAction::MovementLeft:
-                return NodeActionMovementLeftString;
-            case ConnectorAction::MovementRight:
-                return NodeActionMovementRightString;
-            case ConnectorAction::MovementUp:
-                return NodeActionMovementUpString;
-            case ConnectorAction::MovementDown:
-                return NodeActionMovementDownString;
-            case ConnectorAction::Jump:
-                return NodeActionJumpString;
-            }
-            return "";
-        }();
-        const auto innerTextActionSize = MeasureTextEx(gameContext.font, innerTextAction, NodeFontSize, NodeFontSize/FontSpacingFactor);
-
-        // draw background color on overlapping line
-        DrawRing(node.data.position, 0, ActionNodeRadius, 0, 360, ActionNodeSides, BackgroundColor);
-        if (node.is_selected)
-        {
-            DrawRing(node.data.position, 0, ActionNodeRadius, 0, 360, ActionNodeSides, actionColor);
-        } else
-        {
-            DrawRing(node.data.position, ActionNodeRadius, ActionNodeRadius-ActionNodeRadiusThick, 0, 360, ActionNodeSides, actionColor);
-        }
-        switch (node.data.action)
-        {
-        case ConnectorAction::NONE:
-            return;
-        case ConnectorAction::MovementLeft:
-        case ConnectorAction::MovementRight:
-        case ConnectorAction::MovementUp:
-        case ConnectorAction::MovementDown:
-        case ConnectorAction::Jump:
-#if !defined(PLATFORM_WEB)
-#ifndef NDEBUG
-            if (IsKeyDown(KEY_F1))
-            {
-                if (node.is_selected)
+                if (IsKeyDown(KEY_F1))
                 {
-                    DrawTextEx(gameContext.font, innerTextAction, {node.data.position.x - innerTextActionSize.x/2, node.data.position.y - innerTextActionSize.y/2}, NodeFontSize, NodeFontSize/FontSpacingFactor, BackgroundColor);
-                } else
-                {
-                    DrawTextEx(gameContext.font,innerTextAction, {node.data.position.x - innerTextActionSize.x/2, node.data.position.y - innerTextActionSize.y/2}, NodeFontSize, NodeFontSize/FontSpacingFactor, actionColor);
+                    // debug
+                    return TextFormat("%i", node.index);
                 }
-                break;
-            }
-#endif
-#endif
-            // Render Action Icon
-            auto iconColor = node.is_selected ? BackgroundColor : actionColor;
-            DrawTexturePro(gameContext.iconsSpriteSheetTexture,
-                { static_cast<float>(static_cast<int>(node.data.action)*ActionIconSpriteWidth), 0, ActionIconSpriteWidth, ActionIconSpriteHeight },
-                { node.data.position.x, node.data.position.y, ActionIconSpriteWidth, ActionIconSpriteHeight},
-                {ActionIconSpriteWidth/2, ActionIconSpriteHeight/2}, 0, iconColor);
-            break;
-        }
-        break;
-    }
-    case ConnectorType::Key:
-    {
-        auto keyColor = (gameContext.state == GameState::NodesMain) ? KeyNodeColor : DisabledColor;
-        const char* innerTextKey = [&]()
-        {
-#if !defined(PLATFORM_WEB)
-#ifndef NDEBUG
-            if (IsKeyDown(KEY_F1))
-            {
-                // debug
-                return TextFormat("%i", node.index);
-            }
 #endif
 #endif
 
-            switch (node.data.key)
-            {
-            case ConnectorKey::NONE:
+                switch (node.data.action)
+                {
+                    case ConnectorAction::NONE: return "";
+                    case ConnectorAction::MovementLeft: return NodeActionMovementLeftString;
+                    case ConnectorAction::MovementRight: return NodeActionMovementRightString;
+                    case ConnectorAction::MovementUp: return NodeActionMovementUpString;
+                    case ConnectorAction::MovementDown: return NodeActionMovementDownString;
+                    case ConnectorAction::Jump: return NodeActionJumpString;
+                }
                 return "";
-            case ConnectorKey::H:
-                return NodeKeyHString;
-            case ConnectorKey::J:
-                return NodeKeyJString;
-            case ConnectorKey::K:
-                return NodeKeyKString;
-            case ConnectorKey::L:
-                return NodeKeyLString;
-            case ConnectorKey::B:
-                return NodeKeyBString;
-            case ConnectorKey::G:
-                return NodeKeyGString;
-            }
-            return "";
-        }();
-        const auto innerTextKeySize = MeasureTextEx(gameContext.font, innerTextKey, NodeFontSize, NodeFontSize/FontSpacingFactor);
+            }();
+            const auto innerTextActionSize =
+                MeasureTextEx(gameContext.font, innerTextAction, NodeFontSize, NodeFontSize / FontSpacingFactor);
 
-        // draw background color on overlapping line
-        DrawRing(node.data.position, 0, KeyNodeRadius, 0, 360, 0, BackgroundColor);
-        if (node.is_selected)
-        {
-            DrawRing(node.data.position, 0, KeyNodeRadius, 0, 360, 0, keyColor);
-        } else
-        {
-            DrawRing(node.data.position, KeyNodeRadius, KeyNodeRadius-KeyNodeRadiusThick, 0, 360, 0, keyColor);
-        }
-        switch (node.data.key)
-        {
-        case ConnectorKey::NONE:
-            return;
-        case ConnectorKey::B:
-        case ConnectorKey::H:
-        case ConnectorKey::J:
-        case ConnectorKey::K:
-        case ConnectorKey::L:
-        case ConnectorKey::G:
+            // draw background color on overlapping line
+            DrawRing(node.data.position, 0, ActionNodeRadius, 0, 360, ActionNodeSides, BackgroundColor);
             if (node.is_selected)
             {
-                DrawTextEx(gameContext.font, innerTextKey, {node.data.position.x - innerTextKeySize.x/2, node.data.position.y - innerTextKeySize.y/2}, NodeFontSize, NodeFontSize/FontSpacingFactor, BackgroundColor);
-            } else
+                DrawRing(node.data.position, 0, ActionNodeRadius, 0, 360, ActionNodeSides, actionColor);
+            }
+            else
             {
-                DrawTextEx(gameContext.font, innerTextKey, {node.data.position.x - innerTextKeySize.x/2, node.data.position.y - innerTextKeySize.y/2}, NodeFontSize, NodeFontSize/FontSpacingFactor, keyColor);
+                DrawRing(
+                    node.data.position,
+                    ActionNodeRadius,
+                    ActionNodeRadius - ActionNodeRadiusThick,
+                    0,
+                    360,
+                    ActionNodeSides,
+                    actionColor);
+            }
+            switch (node.data.action)
+            {
+                case ConnectorAction::NONE: return;
+                case ConnectorAction::MovementLeft:
+                case ConnectorAction::MovementRight:
+                case ConnectorAction::MovementUp:
+                case ConnectorAction::MovementDown:
+                case ConnectorAction::Jump:
+#if !defined(PLATFORM_WEB)
+#ifndef NDEBUG
+                    if (IsKeyDown(KEY_F1))
+                    {
+                        if (node.is_selected)
+                        {
+                            DrawTextEx(
+                                gameContext.font,
+                                innerTextAction,
+                                {node.data.position.x - innerTextActionSize.x / 2,
+                                 node.data.position.y - innerTextActionSize.y / 2},
+                                NodeFontSize,
+                                NodeFontSize / FontSpacingFactor,
+                                BackgroundColor);
+                        }
+                        else
+                        {
+                            DrawTextEx(
+                                gameContext.font,
+                                innerTextAction,
+                                {node.data.position.x - innerTextActionSize.x / 2,
+                                 node.data.position.y - innerTextActionSize.y / 2},
+                                NodeFontSize,
+                                NodeFontSize / FontSpacingFactor,
+                                actionColor);
+                        }
+                        break;
+                    }
+#endif
+#endif
+                    // Render Action Icon
+                    auto iconColor = node.is_selected ? BackgroundColor : actionColor;
+                    DrawTexturePro(
+                        gameContext.iconsSpriteSheetTexture,
+                        {static_cast<float>(static_cast<int>(node.data.action) * ActionIconSpriteWidth),
+                         0,
+                         ActionIconSpriteWidth,
+                         ActionIconSpriteHeight},
+                        {node.data.position.x, node.data.position.y, ActionIconSpriteWidth, ActionIconSpriteHeight},
+                        {ActionIconSpriteWidth / 2, ActionIconSpriteHeight / 2},
+                        0,
+                        iconColor);
+                    break;
             }
             break;
         }
-        break;
-    }
+        case ConnectorType::Key:
+        {
+            auto keyColor = (gameContext.state == GameState::NodesMain) ? KeyNodeColor : DisabledColor;
+            const char* innerTextKey = [&]()
+            {
+#if !defined(PLATFORM_WEB)
+#ifndef NDEBUG
+                if (IsKeyDown(KEY_F1))
+                {
+                    // debug
+                    return TextFormat("%i", node.index);
+                }
+#endif
+#endif
+
+                switch (node.data.key)
+                {
+                    case ConnectorKey::NONE: return "";
+                    case ConnectorKey::H: return NodeKeyHString;
+                    case ConnectorKey::J: return NodeKeyJString;
+                    case ConnectorKey::K: return NodeKeyKString;
+                    case ConnectorKey::L: return NodeKeyLString;
+                    case ConnectorKey::B: return NodeKeyBString;
+                    case ConnectorKey::G: return NodeKeyGString;
+                }
+                return "";
+            }();
+            const auto innerTextKeySize =
+                MeasureTextEx(gameContext.font, innerTextKey, NodeFontSize, NodeFontSize / FontSpacingFactor);
+
+            // draw background color on overlapping line
+            DrawRing(node.data.position, 0, KeyNodeRadius, 0, 360, 0, BackgroundColor);
+            if (node.is_selected)
+            {
+                DrawRing(node.data.position, 0, KeyNodeRadius, 0, 360, 0, keyColor);
+            }
+            else
+            {
+                DrawRing(node.data.position, KeyNodeRadius, KeyNodeRadius - KeyNodeRadiusThick, 0, 360, 0, keyColor);
+            }
+            switch (node.data.key)
+            {
+                case ConnectorKey::NONE: return;
+                case ConnectorKey::B:
+                case ConnectorKey::H:
+                case ConnectorKey::J:
+                case ConnectorKey::K:
+                case ConnectorKey::L:
+                case ConnectorKey::G:
+                    if (node.is_selected)
+                    {
+                        DrawTextEx(
+                            gameContext.font,
+                            innerTextKey,
+                            {node.data.position.x - innerTextKeySize.x / 2,
+                             node.data.position.y - innerTextKeySize.y / 2},
+                            NodeFontSize,
+                            NodeFontSize / FontSpacingFactor,
+                            BackgroundColor);
+                    }
+                    else
+                    {
+                        DrawTextEx(
+                            gameContext.font,
+                            innerTextKey,
+                            {node.data.position.x - innerTextKeySize.x / 2,
+                             node.data.position.y - innerTextKeySize.y / 2},
+                            NodeFontSize,
+                            NodeFontSize / FontSpacingFactor,
+                            keyColor);
+                    }
+                    break;
+            }
+            break;
+        }
     }
 }
 void renderMap(GameContext& gameContext)
@@ -905,27 +1075,34 @@ void renderMap(GameContext& gameContext)
     if (gameContext.mapData != nullptr)
     {
         // render level
-        for(int y = 0;y < LevelMapHeight; y++)
+        for (int y = 0; y < LevelMapHeight; y++)
         {
-            for(int x = 0;x < LevelMapWidth; x++)
+            for (int x = 0; x < LevelMapWidth; x++)
             {
                 const auto& tile = (*gameContext.mapData)[y][x];
 
-                float sx = tile*LevelTileWidth;
+                float sx = tile * LevelTileWidth;
                 float sy = 0;
 
-                float dx = LevelMapArea.x + x*LevelTileWidth;
-                float dy = LevelMapArea.y + y*LevelTileHeight;
+                float dx = LevelMapArea.x + x * LevelTileWidth;
+                float dy = LevelMapArea.y + y * LevelTileHeight;
 
-                DrawTexturePro(gameContext.tilesetTexture,
-                    { sx, sy, LevelTileWidth, LevelTileHeight },
-                    { dx, dy, LevelTileWidth, LevelTileHeight},
-                    {0, 0}, 0, NeutralTintColor);
+                DrawTexturePro(
+                    gameContext.tilesetTexture,
+                    {sx, sy, LevelTileWidth, LevelTileHeight},
+                    {dx, dy, LevelTileWidth, LevelTileHeight},
+                    {0, 0},
+                    0,
+                    NeutralTintColor);
             }
         }
 
         const float character_scale = (gameContext.playerOnVoidTile) ? PlayerOnVoidTileScale : 1.0f;
-        const Rectangle character_pos { LevelMapArea.x + gameContext.playerTilesPosition.x * LevelTileWidth, LevelMapArea.y + gameContext.playerTilesPosition.y * LevelTileHeight, CharacterSpriteWidth*character_scale, CharacterSpriteHeight*character_scale};
+        const Rectangle character_pos{
+            LevelMapArea.x + gameContext.playerTilesPosition.x * LevelTileWidth,
+            LevelMapArea.y + gameContext.playerTilesPosition.y * LevelTileHeight,
+            CharacterSpriteWidth * character_scale,
+            CharacterSpriteHeight * character_scale};
 
         // render preview lines
         if (gameContext.showHelp2)
@@ -937,78 +1114,82 @@ void renderMap(GameContext& gameContext)
                     if (!actions.empty())
                     {
                         Vector2 tile_position = gameContext.playerTilesPosition;
-                        Vector2 startPosLine {character_pos.x + character_pos.width/2, character_pos.y + character_pos.height/2};
-                        Vector2 endPosLine {character_pos.x + character_pos.width/2, character_pos.y + character_pos.height/2};
+                        Vector2 startPosLine{
+                            character_pos.x + character_pos.width / 2,
+                            character_pos.y + character_pos.height / 2};
+                        Vector2 endPosLine{
+                            character_pos.x + character_pos.width / 2,
+                            character_pos.y + character_pos.height / 2};
                         auto preview_direction = gameContext.playerDirection;
 
                         bool preview_on_void_tile = false;
                         const auto isTileVoid = [&](Vector2 tp)
                         {
-                            if (gameContext.mapData != nullptr &&
-                                tile_position.x >= 0 && tile_position.y >= 0 &&
+                            if (gameContext.mapData != nullptr && tile_position.x >= 0 && tile_position.y >= 0 &&
                                 tile_position.y < gameContext.mapData->size() &&
                                 tile_position.x < (*gameContext.mapData)[tile_position.y].size())
                             {
-                                const auto& tile = static_cast<TileSet>((*gameContext.mapData)[tile_position.y][tile_position.x]);
+                                const auto& tile =
+                                    static_cast<TileSet>((*gameContext.mapData)[tile_position.y][tile_position.x]);
                                 return tile == TileSet::Void1 || tile == TileSet::Void2;
                             }
                             return true;
                         };
 
-                        const auto movePosLineByAction = [&](Vector2& pos, Vector2* tp, auto action){
-                            switch(action)
+                        const auto movePosLineByAction = [&](Vector2& pos, Vector2* tp, auto action)
+                        {
+                            switch (action)
                             {
-                            case ConnectorAction::NONE:
-                                break;
-                            case ConnectorAction::MovementRight:
-                                pos.x += LevelTileWidth;
-                                if (tp != nullptr) tp->x++;
-                                preview_direction = CharacterDirection::Right;
-                                return Vector2{1, 0};
-                            case ConnectorAction::MovementLeft:
-                                pos.x -= LevelTileWidth;
-                                if (tp != nullptr) tp->x--;
-                                preview_direction = CharacterDirection::Left;
-                                return Vector2{-1, 0};
-                            case ConnectorAction::MovementDown:
-                                pos.y += LevelTileWidth;
-                                if (tp != nullptr) tp->y++;
-                                preview_direction = CharacterDirection::Down;
-                                return Vector2{0, 1};
-                            case ConnectorAction::MovementUp:
-                                pos.y -= LevelTileWidth;
-                                if (tp != nullptr) tp->y--;
-                                preview_direction = CharacterDirection::Up;
-                                return Vector2{0, .1};
-                            case ConnectorAction::Jump:
-                                switch (preview_direction)
-                                {
-                            case CharacterDirection::Right:
-                                pos.x += JumpFactor*LevelTileWidth;
-                                    if (tp != nullptr) tp->x += JumpFactor;
+                                case ConnectorAction::NONE: break;
+                                case ConnectorAction::MovementRight:
+                                    pos.x += LevelTileWidth;
+                                    if (tp != nullptr) tp->x++;
                                     preview_direction = CharacterDirection::Right;
                                     return Vector2{1, 0};
-                            case CharacterDirection::Left:
-                                pos.x -= JumpFactor*LevelTileWidth;
-                                    if (tp != nullptr) tp->x -= JumpFactor;
+                                case ConnectorAction::MovementLeft:
+                                    pos.x -= LevelTileWidth;
+                                    if (tp != nullptr) tp->x--;
                                     preview_direction = CharacterDirection::Left;
                                     return Vector2{-1, 0};
-                            case CharacterDirection::Up:
-                                pos.y -= JumpFactor*LevelTileWidth;
-                                    if (tp != nullptr) tp->y -= JumpFactor;
-                                    preview_direction = CharacterDirection::Up;
-                                    return Vector2{0, -1};
-                            case CharacterDirection::Down:
-                                pos.y += JumpFactor*LevelTileWidth;
-                                    if (tp != nullptr) tp->y += JumpFactor;
+                                case ConnectorAction::MovementDown:
+                                    pos.y += LevelTileWidth;
+                                    if (tp != nullptr) tp->y++;
                                     preview_direction = CharacterDirection::Down;
                                     return Vector2{0, 1};
-                                }
-                                break;
+                                case ConnectorAction::MovementUp:
+                                    pos.y -= LevelTileWidth;
+                                    if (tp != nullptr) tp->y--;
+                                    preview_direction = CharacterDirection::Up;
+                                    return Vector2{0, .1};
+                                case ConnectorAction::Jump:
+                                    switch (preview_direction)
+                                    {
+                                        case CharacterDirection::Right:
+                                            pos.x += JumpFactor * LevelTileWidth;
+                                            if (tp != nullptr) tp->x += JumpFactor;
+                                            preview_direction = CharacterDirection::Right;
+                                            return Vector2{1, 0};
+                                        case CharacterDirection::Left:
+                                            pos.x -= JumpFactor * LevelTileWidth;
+                                            if (tp != nullptr) tp->x -= JumpFactor;
+                                            preview_direction = CharacterDirection::Left;
+                                            return Vector2{-1, 0};
+                                        case CharacterDirection::Up:
+                                            pos.y -= JumpFactor * LevelTileWidth;
+                                            if (tp != nullptr) tp->y -= JumpFactor;
+                                            preview_direction = CharacterDirection::Up;
+                                            return Vector2{0, -1};
+                                        case CharacterDirection::Down:
+                                            pos.y += JumpFactor * LevelTileWidth;
+                                            if (tp != nullptr) tp->y += JumpFactor;
+                                            preview_direction = CharacterDirection::Down;
+                                            return Vector2{0, 1};
+                                    }
+                                    break;
                             }
                             return Vector2{1, 1};
                         };
-                        Vector2 direction_vector {1, 1};
+                        Vector2 direction_vector{1, 1};
                         for (const auto& action : actions)
                         {
                             if (!preview_on_void_tile)
@@ -1019,21 +1200,29 @@ void renderMap(GameContext& gameContext)
                                     DrawLineEx(startPosLine, endPosLine, PreviewLineThick, PreviewLineColor);
                                 }
                                 direction_vector = movePosLineByAction(startPosLine, nullptr, action);
-                            } else
+                            }
+                            else
                             {
                                 direction_vector = movePosLineByAction(endPosLine, &tile_position, action);
                                 // make dotted line
                                 const auto max_step = Vector2Distance(startPosLine, endPosLine);
                                 auto innerStartPosLine = startPosLine;
                                 auto innerEndPosLine = Vector2MoveTowards(startPosLine, endPosLine, 2);
-                                for (int step = 0;step < max_step && Vector2Distance(innerEndPosLine, endPosLine) > 0;step += 2*PreviewLineThick)
+                                for (int step = 0; step < max_step && Vector2Distance(innerEndPosLine, endPosLine) > 0;
+                                     step += 2 * PreviewLineThick)
                                 {
                                     if (CheckCollisionPointRec(innerEndPosLine, LevelMapArea))
                                     {
-                                        DrawLineEx(innerStartPosLine, innerEndPosLine, PreviewLineThick, PreviewLineColor);
+                                        DrawLineEx(
+                                            innerStartPosLine,
+                                            innerEndPosLine,
+                                            PreviewLineThick,
+                                            PreviewLineColor);
                                     }
-                                    innerStartPosLine = Vector2MoveTowards(innerEndPosLine, endPosLine, PreviewLineThick);
-                                    innerEndPosLine = Vector2MoveTowards(innerStartPosLine, endPosLine, 2*PreviewLineThick);
+                                    innerStartPosLine =
+                                        Vector2MoveTowards(innerEndPosLine, endPosLine, PreviewLineThick);
+                                    innerEndPosLine =
+                                        Vector2MoveTowards(innerStartPosLine, endPosLine, 2 * PreviewLineThick);
                                 }
                                 if (CheckCollisionPointRec(endPosLine, LevelMapArea))
                                 {
@@ -1048,28 +1237,35 @@ void renderMap(GameContext& gameContext)
                         {
                             switch (key)
                             {
-                            case ConnectorKey::NONE:
-                                break;
-                            case ConnectorKey::B:
-                                return ConnectorKeyBString;
-                            case ConnectorKey::H:
-                                return ConnectorKeyHString;
-                            case ConnectorKey::J:
-                                return ConnectorKeyJString;
-                            case ConnectorKey::K:
-                                return ConnectorKeyKString;
-                            case ConnectorKey::L:
-                                return ConnectorKeyLString;
-                            case ConnectorKey::G:
-                                return ConnectorKeyGString;
+                                case ConnectorKey::NONE: break;
+                                case ConnectorKey::B: return ConnectorKeyBString;
+                                case ConnectorKey::H: return ConnectorKeyHString;
+                                case ConnectorKey::J: return ConnectorKeyJString;
+                                case ConnectorKey::K: return ConnectorKeyKString;
+                                case ConnectorKey::L: return ConnectorKeyLString;
+                                case ConnectorKey::G: return ConnectorKeyGString;
                             }
                             return "";
                         }();
-                        auto keyTextSize = MeasureTextEx(gameContext.font, keyText, PreviewTextFontSize, PreviewTextFontSize/FontSpacingFactor);
-                        Rectangle keyTextPos {startPosLine.x + direction_vector.x*keyTextSize.x/2 + PreviewLineThick+1, startPosLine.y + direction_vector.y*keyTextSize.y/8 + PreviewLineThick, keyTextSize.x, keyTextSize.y};
+                        auto keyTextSize = MeasureTextEx(
+                            gameContext.font,
+                            keyText,
+                            PreviewTextFontSize,
+                            PreviewTextFontSize / FontSpacingFactor);
+                        Rectangle keyTextPos{
+                            startPosLine.x + direction_vector.x * keyTextSize.x / 2 + PreviewLineThick + 1,
+                            startPosLine.y + direction_vector.y * keyTextSize.y / 8 + PreviewLineThick,
+                            keyTextSize.x,
+                            keyTextSize.y};
                         if (CheckCollisionRecs(keyTextPos, LevelMapArea))
                         {
-                            DrawTextEx(gameContext.font, keyText, {keyTextPos.x, keyTextPos.y}, PreviewTextFontSize, PreviewTextFontSize/FontSpacingFactor, PreviewLineColor);
+                            DrawTextEx(
+                                gameContext.font,
+                                keyText,
+                                {keyTextPos.x, keyTextPos.y},
+                                PreviewTextFontSize,
+                                PreviewTextFontSize / FontSpacingFactor,
+                                PreviewLineColor);
                         }
                     }
                 }
@@ -1080,13 +1276,22 @@ void renderMap(GameContext& gameContext)
         // only render when in map bound
         if (CheckCollisionRecs(character_pos, LevelMapArea))
         {
-            DrawTexturePro(gameContext.characterSpriteSheetTexture,
-                { static_cast<float>(static_cast<int>(gameContext.playerDirection)*CharacterSpriteWidth), 0, CharacterSpriteWidth, CharacterSpriteHeight },
+            DrawTexturePro(
+                gameContext.characterSpriteSheetTexture,
+                {static_cast<float>(static_cast<int>(gameContext.playerDirection) * CharacterSpriteWidth),
+                 0,
+                 CharacterSpriteWidth,
+                 CharacterSpriteHeight},
                 character_pos,
-                {0, 0}, 0, NeutralTintColor);
+                {0, 0},
+                0,
+                NeutralTintColor);
         }
     }
 
     // border
-    DrawRectangleLinesEx(LevelMapArea, BorderLineThick, (gameContext.state == GameState::CharacterMain) ? MapActiveBorderColor : BorderColor);
+    DrawRectangleLinesEx(
+        LevelMapArea,
+        BorderLineThick,
+        (gameContext.state == GameState::CharacterMain) ? MapActiveBorderColor : BorderColor);
 }

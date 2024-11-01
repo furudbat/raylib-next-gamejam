@@ -2,8 +2,8 @@
 
 #include "constants.h"
 #include "types.h"
-#include <chrono>
 #include <raylib.h>
+#include <chrono>
 #include <string>
 #include <unordered_map>
 
@@ -22,7 +22,7 @@ struct GameContext
     std::chrono::milliseconds delta{std::chrono::milliseconds::zero()};
 
     // scene data
-    Rectangle mouse{0,0,0,0};
+    Rectangle mouse{0, 0, 0, 0};
     GameState state{GameState::Start};
 
     // level/player data
@@ -61,10 +61,10 @@ struct GameContext
     GameContext()
     {
         static_assert(MaxNodeConnections > 0);
-        keyBinds.reserve(5*MaxNodeConnections);
-        leftHelperText.reserve(24*4);
+        keyBinds.reserve(5 * MaxNodeConnections);
+        leftHelperText.reserve(24 * 4);
         levelHelperText.reserve(24);
-        rightHelperText.reserve(24*4);
+        rightHelperText.reserve(24 * 4);
     }
 };
 
@@ -93,7 +93,8 @@ extern void RenderEndScene(GameContext& gameContext);
 
 
 /// utils
-namespace utils {
+namespace utils
+{
 inline static constexpr const char* WHITESPACE = " \n\r\t\f\v";
 inline std::string ltrim(std::string_view s)
 {
@@ -105,7 +106,8 @@ inline std::string rtrim(std::string_view s)
     const auto end = s.find_last_not_of(WHITESPACE);
     return (end == std::string::npos) ? "" : std::string{s.substr(0, end + 1)};
 }
-inline std::string trim(std::string_view s) {
+inline std::string trim(std::string_view s)
+{
     return rtrim(ltrim(s));
 }
-}
+} // namespace utils

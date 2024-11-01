@@ -1,9 +1,9 @@
 #pragma once
 
 #include "constants.h"
+#include <raylib.h>
 #include <array>
 #include <cstdint>
-#include <raylib.h>
 #include <unordered_set>
 #include <vector>
 
@@ -69,13 +69,15 @@ enum class ControlIcons : int
 };
 
 /// Types
-struct NodeData {
+struct NodeData
+{
     Vector2 position{0, 0};
     ConnectorAction action{ConnectorAction::NONE};
     ConnectorKey key{ConnectorKey::NONE};
     ConnectorType type{ConnectorType::DISABLED};
 };
-struct ConnectorNode {
+struct ConnectorNode
+{
     int index{-1};
     NodeData data;
     int connected_counter{0};
@@ -112,7 +114,7 @@ inline constexpr void setKeyNode(ConnectorNode& node, Vector2 pos, ConnectorKey 
 }
 inline constexpr void clearKeyNode(ConnectorNode& node)
 {
-    //node.index = -1;
+    // node.index = -1;
     node.data.position = {0, 0};
     node.data.action = ConnectorAction::NONE;
     node.data.key = ConnectorKey::NONE;
@@ -120,7 +122,8 @@ inline constexpr void clearKeyNode(ConnectorNode& node)
     node.is_selected = false;
 }
 
-inline constexpr NodeData ActionNode(Vector2 pos, ConnectorAction action) {
+inline constexpr NodeData ActionNode(Vector2 pos, ConnectorAction action)
+{
     return {
         .position = pos,
         .action = action,
@@ -128,7 +131,8 @@ inline constexpr NodeData ActionNode(Vector2 pos, ConnectorAction action) {
         .type = ConnectorType::Action,
     };
 }
-inline constexpr NodeData KeyNode(Vector2 pos, ConnectorKey key) {
+inline constexpr NodeData KeyNode(Vector2 pos, ConnectorKey key)
+{
     return {
         .position = pos,
         .action = ConnectorAction::NONE,
@@ -143,7 +147,7 @@ using Level_t = std::array<LevelLine_t, LevelMapHeight>;
 using GameLevelNodes = std::array<ConnectorNode, MaxNodesInLevel>;
 
 template<size_t N>
-requires (N <= MaxNodesInLevel)
+    requires(N <= MaxNodesInLevel)
 auto CreateLevelNodes(const std::array<NodeData, N>& data)
 {
     GameLevelNodes ret;
@@ -151,7 +155,7 @@ auto CreateLevelNodes(const std::array<NodeData, N>& data)
     {
         ret[i] = {};
         ret[i].data = data[i];
-        //ret[i].index = static_cast<int>(i);
+        // ret[i].index = static_cast<int>(i);
     }
     for (size_t i = 0; i < ret.size(); ++i)
     {

@@ -25,6 +25,8 @@ AlwaysBreakTemplateDeclarations: true
 #BreakTemplateDeclarations: Yes
 BinPackArguments: false
 BinPackParameters: false
+BreakBeforeBinaryOperators: None
+BreakBeforeBraces: Allman
 BraceWrapping:
   AfterCaseLabel:  true
   AfterClass:      false
@@ -44,8 +46,6 @@ BraceWrapping:
   SplitEmptyFunction: false
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
-BreakBeforeBinaryOperators: None
-BreakBeforeBraces: Custom
 BreakBeforeConceptDeclarations: false
 BreakBeforeInheritanceComma: false
 BreakBeforeTernaryOperators: true

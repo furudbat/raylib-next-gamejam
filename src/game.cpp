@@ -1,11 +1,11 @@
+#include "game.h"
+#include "constants.h"
+#include "types.h"
 #include <raylib.h>
 #include <array>
 #include <chrono>
 #include <unordered_map>
 #include <vector>
-#include "constants.h"
-#include "types.h"
-#include "game.h"
 // Levels
 #include "level1.h"
 #include "level2.h"
@@ -26,69 +26,69 @@ void SetLevel(GameContext& gameContext, int level)
     gameContext.playerCurrentKey = ConnectorKey::NONE;
     gameContext.playerActionIndex = -1;
     gameContext.deathCount = 0;
-    switch(gameContext.level)
+    switch (gameContext.level)
     {
-    case 1:
-        gameContext.nodes = CreateLevelNodes(level1::NodesData);
-        gameContext.mapData = &level1::MapData;
-        gameContext.playerTilesPosition = level1::CharacterStartTilesPosition;
-        gameContext.playerStartTilesPosition = level1::CharacterStartTilesPosition;
-        gameContext.playerStartDirection = level1::CharacterStartDirection;
-        gameContext.playerDirection = level1::CharacterStartDirection;
-        gameContext.levelMaxNodeConnections = level1::MaxNodeConnections;
-        gameContext.levelMaxActionsPerKey = level1::MaxActionsPerKey;
-        gameContext.showHelp2 = true;
-        break;
-    case 2:
-        gameContext.nodes = CreateLevelNodes(level2::NodesData);
-        gameContext.mapData = &level2::MapData;
-        gameContext.playerTilesPosition = level2::CharacterStartTilesPosition;
-        gameContext.playerStartTilesPosition = level2::CharacterStartTilesPosition;
-        gameContext.playerStartDirection = level2::CharacterStartDirection;
-        gameContext.playerDirection = level2::CharacterStartDirection;
-        gameContext.levelMaxNodeConnections = level2::MaxNodeConnections;
-        gameContext.levelMaxActionsPerKey = level2::MaxActionsPerKey;
-        if (!gameContext.manuelHelp)
-        {
+        case 1:
+            gameContext.nodes = CreateLevelNodes(level1::NodesData);
+            gameContext.mapData = &level1::MapData;
+            gameContext.playerTilesPosition = level1::CharacterStartTilesPosition;
+            gameContext.playerStartTilesPosition = level1::CharacterStartTilesPosition;
+            gameContext.playerStartDirection = level1::CharacterStartDirection;
+            gameContext.playerDirection = level1::CharacterStartDirection;
+            gameContext.levelMaxNodeConnections = level1::MaxNodeConnections;
+            gameContext.levelMaxActionsPerKey = level1::MaxActionsPerKey;
             gameContext.showHelp2 = true;
-        }
-        break;
-    case 3:
-        gameContext.nodes = CreateLevelNodes(level3::NodesData);
-        gameContext.mapData = &level3::MapData;
-        gameContext.playerTilesPosition = level3::CharacterStartTilesPosition;
-        gameContext.playerStartTilesPosition = level3::CharacterStartTilesPosition;
-        gameContext.playerStartDirection = level3::CharacterStartDirection;
-        gameContext.playerDirection = level3::CharacterStartDirection;
-        gameContext.levelMaxNodeConnections = level3::MaxNodeConnections;
-        gameContext.levelMaxActionsPerKey = level3::MaxActionsPerKey;
-        if (!gameContext.manuelHelp)
-        {
-            gameContext.showHelp2 = true;
-        }
-        break;
-    case 4:
-        gameContext.nodes = CreateLevelNodes(level4::NodesData);
-        gameContext.mapData = &level4::MapData;
-        gameContext.playerTilesPosition = level4::CharacterStartTilesPosition;
-        gameContext.playerStartTilesPosition = level4::CharacterStartTilesPosition;
-        gameContext.playerStartDirection = level4::CharacterStartDirection;
-        gameContext.playerDirection = level4::CharacterStartDirection;
-        gameContext.levelMaxNodeConnections = level4::MaxNodeConnections;
-        gameContext.levelMaxActionsPerKey = level4::MaxActionsPerKey;
-        break;
-    case 5:
-        gameContext.nodes = CreateLevelNodes(level5::NodesData);
-        gameContext.mapData = &level5::MapData;
-        gameContext.playerTilesPosition = level5::CharacterStartTilesPosition;
-        gameContext.playerStartTilesPosition = level5::CharacterStartTilesPosition;
-        gameContext.playerStartDirection = level5::CharacterStartDirection;
-        gameContext.playerDirection = level5::CharacterStartDirection;
-        gameContext.levelMaxNodeConnections = level5::MaxNodeConnections;
-        gameContext.levelMaxActionsPerKey = level5::MaxActionsPerKey;
-        break;
-        /// @TODO: add (new) levels, don't forget to update MaxLevels
-    default: TraceLog(LOG_ERROR, "Error Not Found: %i", gameContext.level);
+            break;
+        case 2:
+            gameContext.nodes = CreateLevelNodes(level2::NodesData);
+            gameContext.mapData = &level2::MapData;
+            gameContext.playerTilesPosition = level2::CharacterStartTilesPosition;
+            gameContext.playerStartTilesPosition = level2::CharacterStartTilesPosition;
+            gameContext.playerStartDirection = level2::CharacterStartDirection;
+            gameContext.playerDirection = level2::CharacterStartDirection;
+            gameContext.levelMaxNodeConnections = level2::MaxNodeConnections;
+            gameContext.levelMaxActionsPerKey = level2::MaxActionsPerKey;
+            if (!gameContext.manuelHelp)
+            {
+                gameContext.showHelp2 = true;
+            }
+            break;
+        case 3:
+            gameContext.nodes = CreateLevelNodes(level3::NodesData);
+            gameContext.mapData = &level3::MapData;
+            gameContext.playerTilesPosition = level3::CharacterStartTilesPosition;
+            gameContext.playerStartTilesPosition = level3::CharacterStartTilesPosition;
+            gameContext.playerStartDirection = level3::CharacterStartDirection;
+            gameContext.playerDirection = level3::CharacterStartDirection;
+            gameContext.levelMaxNodeConnections = level3::MaxNodeConnections;
+            gameContext.levelMaxActionsPerKey = level3::MaxActionsPerKey;
+            if (!gameContext.manuelHelp)
+            {
+                gameContext.showHelp2 = true;
+            }
+            break;
+        case 4:
+            gameContext.nodes = CreateLevelNodes(level4::NodesData);
+            gameContext.mapData = &level4::MapData;
+            gameContext.playerTilesPosition = level4::CharacterStartTilesPosition;
+            gameContext.playerStartTilesPosition = level4::CharacterStartTilesPosition;
+            gameContext.playerStartDirection = level4::CharacterStartDirection;
+            gameContext.playerDirection = level4::CharacterStartDirection;
+            gameContext.levelMaxNodeConnections = level4::MaxNodeConnections;
+            gameContext.levelMaxActionsPerKey = level4::MaxActionsPerKey;
+            break;
+        case 5:
+            gameContext.nodes = CreateLevelNodes(level5::NodesData);
+            gameContext.mapData = &level5::MapData;
+            gameContext.playerTilesPosition = level5::CharacterStartTilesPosition;
+            gameContext.playerStartTilesPosition = level5::CharacterStartTilesPosition;
+            gameContext.playerStartDirection = level5::CharacterStartDirection;
+            gameContext.playerDirection = level5::CharacterStartDirection;
+            gameContext.levelMaxNodeConnections = level5::MaxNodeConnections;
+            gameContext.levelMaxActionsPerKey = level5::MaxActionsPerKey;
+            break;
+            /// @TODO: add (new) levels, don't forget to update MaxLevels
+        default: TraceLog(LOG_ERROR, "Error Not Found: %i", gameContext.level);
     }
     UpdateAllNodes(gameContext);
 
@@ -98,7 +98,7 @@ void NextLevel(GameContext& gameContext)
 {
     if (gameContext.level > 0 && gameContext.level < MaxLevels)
     {
-        SetLevel(gameContext, gameContext.level+1);
+        SetLevel(gameContext, gameContext.level + 1);
     }
     else if (gameContext.level == MaxLevels)
     {
@@ -113,7 +113,7 @@ static void updateKeyBinds(GameContext& gameContext);
 static void updateLevelConnectionCount(GameContext& gameContext);
 void UpdateAllNodes(GameContext& gameContext)
 {
-    for(auto& node : gameContext.nodes)
+    for (auto& node : gameContext.nodes)
     {
         updateNodeConnections(gameContext, node);
         updateCountConnectedNode(gameContext, node);
@@ -125,7 +125,11 @@ void UpdateAllNodes(GameContext& gameContext)
 
     if (gameContext.levelConnections > 0)
     {
-        gameContext.leftHelperText = TextFormat(LeftHelperTextConnectionsFormat, gameContext.levelConnections, gameContext.levelMaxNodeConnections, gameContext.levelMaxActionsPerKey);
+        gameContext.leftHelperText = TextFormat(
+            LeftHelperTextConnectionsFormat,
+            gameContext.levelConnections,
+            gameContext.levelMaxNodeConnections,
+            gameContext.levelMaxActionsPerKey);
     }
     else
     {
@@ -180,32 +184,26 @@ void updateKeyBinds(GameContext& gameContext)
         {
             switch (node.data.key)
             {
-            case ConnectorKey::NONE:
-                break;
-            case ConnectorKey::H:
-            case ConnectorKey::J:
-            case ConnectorKey::K:
-            case ConnectorKey::L:
-            case ConnectorKey::B:
-            case ConnectorKey::G:
-                gameContext.keyBinds[node.data.key] = {};
-                break;
+                case ConnectorKey::NONE: break;
+                case ConnectorKey::H:
+                case ConnectorKey::J:
+                case ConnectorKey::K:
+                case ConnectorKey::L:
+                case ConnectorKey::B:
+                case ConnectorKey::G: gameContext.keyBinds[node.data.key] = {}; break;
             }
 
-            for (size_t i = 0;i < node.connected_actions.size();++i)
+            for (size_t i = 0; i < node.connected_actions.size(); ++i)
             {
                 const auto& connectedAction = node.connected_actions[i];
                 switch (connectedAction)
                 {
-                case ConnectorAction::NONE:
-                    break;
-                case ConnectorAction::MovementLeft:
-                case ConnectorAction::MovementRight:
-                case ConnectorAction::MovementUp:
-                case ConnectorAction::MovementDown:
-                case ConnectorAction::Jump:
-                    gameContext.keyBinds[node.data.key].push_back(connectedAction);
-                    break;
+                    case ConnectorAction::NONE: break;
+                    case ConnectorAction::MovementLeft:
+                    case ConnectorAction::MovementRight:
+                    case ConnectorAction::MovementUp:
+                    case ConnectorAction::MovementDown:
+                    case ConnectorAction::Jump: gameContext.keyBinds[node.data.key].push_back(connectedAction); break;
                 }
             }
         }
@@ -217,51 +215,37 @@ void updateKeyBinds(GameContext& gameContext)
     {
         switch (key)
         {
-        case ConnectorKey::NONE:
-            break;
-        case ConnectorKey::H:
-            gameContext.rightHelperText += TextFormat(" %s: ", ConnectorKeyHString);
-            break;
-        case ConnectorKey::J:
-            gameContext.rightHelperText += TextFormat(" %s: ", ConnectorKeyJString);
-            break;
-        case ConnectorKey::K:
-            gameContext.rightHelperText += TextFormat(" %s: ", ConnectorKeyKString);
-            break;
-        case ConnectorKey::L:
-            gameContext.rightHelperText += TextFormat(" %s: ", ConnectorKeyLString);
-            break;
-        case ConnectorKey::B:
-            gameContext.rightHelperText += TextFormat(" %s: ", ConnectorKeyBString);
-            break;
-        case ConnectorKey::G:
-            gameContext.rightHelperText += TextFormat(" %s: ", ConnectorKeyGString);
-            break;
+            case ConnectorKey::NONE: break;
+            case ConnectorKey::H: gameContext.rightHelperText += TextFormat(" %s: ", ConnectorKeyHString); break;
+            case ConnectorKey::J: gameContext.rightHelperText += TextFormat(" %s: ", ConnectorKeyJString); break;
+            case ConnectorKey::K: gameContext.rightHelperText += TextFormat(" %s: ", ConnectorKeyKString); break;
+            case ConnectorKey::L: gameContext.rightHelperText += TextFormat(" %s: ", ConnectorKeyLString); break;
+            case ConnectorKey::B: gameContext.rightHelperText += TextFormat(" %s: ", ConnectorKeyBString); break;
+            case ConnectorKey::G: gameContext.rightHelperText += TextFormat(" %s: ", ConnectorKeyGString); break;
         }
-        for (size_t i = 0;i < actions.size();++i)
+        for (size_t i = 0; i < actions.size(); ++i)
         {
             const auto& connectedAction = actions[i];
             switch (connectedAction)
             {
-            case ConnectorAction::NONE:
-                break;
-            case ConnectorAction::MovementLeft:
-                gameContext.rightHelperText += TextFormat("%s", ConnectorActionMovementLeftString);
-                break;
-            case ConnectorAction::MovementRight:
-                gameContext.rightHelperText += TextFormat("%s", ConnectorActionMovementRightString);
-                break;
-            case ConnectorAction::MovementUp:
-                gameContext.rightHelperText += TextFormat("%s", ConnectorActionMovementUpString);
-                break;
-            case ConnectorAction::MovementDown:
-                gameContext.rightHelperText += TextFormat("%s", ConnectorActionMovementDownString);
-                break;
-            case ConnectorAction::Jump:
-                gameContext.rightHelperText += TextFormat("%s", ConnectorActionJumpString);
-                break;
+                case ConnectorAction::NONE: break;
+                case ConnectorAction::MovementLeft:
+                    gameContext.rightHelperText += TextFormat("%s", ConnectorActionMovementLeftString);
+                    break;
+                case ConnectorAction::MovementRight:
+                    gameContext.rightHelperText += TextFormat("%s", ConnectorActionMovementRightString);
+                    break;
+                case ConnectorAction::MovementUp:
+                    gameContext.rightHelperText += TextFormat("%s", ConnectorActionMovementUpString);
+                    break;
+                case ConnectorAction::MovementDown:
+                    gameContext.rightHelperText += TextFormat("%s", ConnectorActionMovementDownString);
+                    break;
+                case ConnectorAction::Jump:
+                    gameContext.rightHelperText += TextFormat("%s", ConnectorActionJumpString);
+                    break;
             }
-            if (i < actions.size()-1)
+            if (i < actions.size() - 1)
             {
                 gameContext.rightHelperText += " -> ";
             }
@@ -284,7 +268,7 @@ void updateNodeConnections(GameContext& gameContext, ConnectorNode& node)
             {
                 if (directConnectedNodeIndex != -1 && directConnectedNodeIndex != root_node_index)
                 {
-                    if(node.connected_nodes.size() < MaxIndirectConnections)
+                    if (node.connected_nodes.size() < MaxIndirectConnections)
                     {
                         node.connected_nodes.emplace(directConnectedNodeIndex);
                     }
@@ -318,12 +302,14 @@ void updateNodeConnections(GameContext& gameContext, ConnectorNode& node)
                     if (node.index != innerConnectedNodeIndex1 && innerConnectedNodeIndex1 != -1)
                     {
                         addConnection(node.index, gameContext.nodes[innerConnectedNodeIndex1]);
-                        for (const auto& inner_connected_node_index_2 : gameContext.nodes[innerConnectedNodeIndex1].direct_connections)
+                        for (const auto& inner_connected_node_index_2 :
+                             gameContext.nodes[innerConnectedNodeIndex1].direct_connections)
                         {
                             if (node.index != inner_connected_node_index_2 && inner_connected_node_index_2 != -1)
                             {
                                 addConnection(node.index, gameContext.nodes[inner_connected_node_index_2]);
-                                for (const auto& innerConnectedNodeIndex3 : gameContext.nodes[inner_connected_node_index_2].direct_connections)
+                                for (const auto& innerConnectedNodeIndex3 :
+                                     gameContext.nodes[inner_connected_node_index_2].direct_connections)
                                 {
                                     if (node.index != innerConnectedNodeIndex3 && innerConnectedNodeIndex3 != -1)
                                     {
@@ -362,7 +348,7 @@ void updateNodeConnections(GameContext& gameContext, ConnectorNode& node)
     if (IsKeyDown(KEY_F2))
     {
         TraceLog(LOG_DEBUG, "node %d -> ", node.index);
-        for(const auto& connectedIndex : node.connected_nodes)
+        for (const auto& connectedIndex : node.connected_nodes)
         {
             TraceLog(LOG_DEBUG, " %d", connectedIndex);
         }

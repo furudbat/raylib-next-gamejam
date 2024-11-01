@@ -1,27 +1,27 @@
 /*******************************************************************************************
-*
-*   raylib gamejam template
-*
-*   Template originally created with raylib 4.5-dev, last time updated with raylib 5.0
-*
-*   Template licensed under an unmodified zlib/libpng license, which is an OSI-certified,
-*   BSD-like license that allows static linking with closed source software
-*
-*   Copyright (c) 2022-2024 Ramon Santamaria (@raysan5)
-*
-********************************************************************************************/
+ *
+ *   raylib gamejam template
+ *
+ *   Template originally created with raylib 4.5-dev, last time updated with raylib 5.0
+ *
+ *   Template licensed under an unmodified zlib/libpng license, which is an OSI-certified,
+ *   BSD-like license that allows static linking with closed source software
+ *
+ *   Copyright (c) 2022-2024 Ramon Santamaria (@raysan5)
+ *
+ ********************************************************************************************/
 
 #include <raylib.h>
 
 #if defined(PLATFORM_WEB)
-    #define CUSTOM_MODAL_DIALOGS            // Force custom modal dialogs usage
-    #include <emscripten/emscripten.h>      // Emscripten library - LLVM to JavaScript compiler
+#define CUSTOM_MODAL_DIALOGS // Force custom modal dialogs usage
+#include <emscripten/emscripten.h> // Emscripten library - LLVM to JavaScript compiler
 #endif
 
 #include <cassert>
 #include <chrono>
-#include <memory>
 #include <cstdlib>
+#include <memory>
 
 //----------------------------------------------------------------------------------
 // Defines and Macros
@@ -31,9 +31,9 @@
 #if !defined(PLATFORM_WEB)
 #define SUPPORT_LOG_INFO
 #if defined(SUPPORT_LOG_INFO)
-    #define LOG(...) printf(__VA_ARGS__)
+#define LOG(...) printf(__VA_ARGS__)
 #else
-    #define LOG(...)
+#define LOG(...)
 #endif
 #else
 #define LOG(...)
@@ -53,7 +53,7 @@
 /// @NOTE: game needs to be global for emscripten, see UpdateDrawFrame (no parameter passing)
 static std::unique_ptr<GameContext> g_gameContext{nullptr};
 void UpdateGameLogic();
-void UpdateDrawFrame();      // Update and Draw one frame
+void UpdateDrawFrame(); // Update and Draw one frame
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -65,7 +65,7 @@ int main(int /*argc*/, char** /*argv*/)
     SetTraceLogLevel(LOG_DEBUG);
 #else
 #if !defined(_DEBUG)
-    SetTraceLogLevel(LOG_NONE);         // Disable raylib trace log messages
+    SetTraceLogLevel(LOG_NONE); // Disable raylib trace log messages
 #endif
 #endif
 #else
@@ -74,9 +74,9 @@ int main(int /*argc*/, char** /*argv*/)
 
     // Initialization
     //--------------------------------------------------------------------------------------
-    //SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_ALWAYS_RUN);
+    // SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_ALWAYS_RUN);
     InitWindow(ScreenWidth, ScreenHeight, "NeuroCircuit - raylib NEXT gamejam 2024");
-    //InitAudioDevice();
+    // InitAudioDevice();
 
     /// @NOTE: use unique_ptr, init game context AFTER init window to avoid some init. fiasco ... (problems with font loading...) ???
     g_gameContext = std::make_unique<GameContext>();
@@ -98,11 +98,11 @@ int main(int /*argc*/, char** /*argv*/)
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(UpdateDrawFrame, FPS, 1);
 #else
-    SetTargetFPS(FPS);     // Set our game frames-per-second
+    SetTargetFPS(FPS); // Set our game frames-per-second
     //--------------------------------------------------------------------------------------
 
     // Main game loop
-    while (!WindowShouldClose())    // Detect window close button
+    while (!WindowShouldClose()) // Detect window close button
     {
         UpdateDrawFrame();
     }
@@ -121,8 +121,8 @@ int main(int /*argc*/, char** /*argv*/)
     UnloadTexture(g_gameContext->iconsControlSpriteSheetTexture);
     UnloadTexture(g_gameContext->endTexture);
 
-    //CloseAudioDevice();
-    CloseWindow();        // Close window and OpenGL context
+    // CloseAudioDevice();
+    CloseWindow(); // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
     return EXIT_SUCCESS;
@@ -131,24 +131,17 @@ int main(int /*argc*/, char** /*argv*/)
 //--------------------------------------------------------------------------------------------
 // Module functions definition
 //--------------------------------------------------------------------------------------------
-void UpdateGameLogic() {
+void UpdateGameLogic()
+{
     assert(g_gameContext != nullptr);
     using fsec = std::chrono::duration<float>;
     g_gameContext->delta = std::chrono::duration_cast<std::chrono::milliseconds>(fsec{GetFrameTime()});
     switch (g_gameContext->state)
     {
-    case GameState::Start:
-        UpdateStartScene(*g_gameContext);
-        break;
-    case GameState::NodesMain:
-        UpdateMainSceneNodes(*g_gameContext);
-        break;
-    case GameState::CharacterMain:
-        UpdateMainSceneMap(*g_gameContext);
-        break;
-    case GameState::End:
-        UpdateEndScene(*g_gameContext);
-        break;
+        case GameState::Start: UpdateStartScene(*g_gameContext); break;
+        case GameState::NodesMain: UpdateMainSceneNodes(*g_gameContext); break;
+        case GameState::CharacterMain: UpdateMainSceneMap(*g_gameContext); break;
+        case GameState::End: UpdateEndScene(*g_gameContext); break;
     }
     if (g_gameContext->state == GameState::NodesMain || g_gameContext->state == GameState::CharacterMain)
     {
@@ -181,7 +174,7 @@ void UpdateDrawFrame()
 {
     assert(g_gameContext != nullptr);
     auto mousePos = GetMousePosition();
-    g_gameContext->mouse = {.x=mousePos.x, .y=mousePos.y ,.width=8 ,.height=8};
+    g_gameContext->mouse = {.x = mousePos.x, .y = mousePos.y, .width = 8, .height = 8};
 
     // Update
     UpdateGameLogic();
