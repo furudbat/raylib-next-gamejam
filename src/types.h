@@ -1,11 +1,11 @@
 #pragma once
 
 #include "constants.h"
-#include <raylib.h>
 #include <array>
-#include <vector>
-#include <unordered_set>
 #include <cstdint>
+#include <raylib.h>
+#include <unordered_set>
+#include <vector>
 
 /// enums
 enum class GameState

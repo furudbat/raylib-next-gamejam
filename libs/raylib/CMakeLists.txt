@@ -3,6 +3,22 @@
 
 # @TODO: add sounds in game
 set(RAYLIB_SUPPORT_MODULE_RAUDIO OFF)
+set(RAYLIB_ENABLE_ASAN OFF)
+set(RAYLIB_ENABLE_UBSAN OFF)
+set(RAYLIB_ENABLE_MSAN OFF)
+if(ENABLE_SANITIZER_ADDRESS)
+    set(RAYLIB_ENABLE_ASAN ON)
+endif()
+if(ENABLE_SANITIZER_UNDEFINED_BEHAVIOR)
+    set(RAYLIB_ENABLE_UBSAN ON)
+endif()
+if(ENABLE_SANITIZER_MEMORY)
+    set(RAYLIB_ENABLE_MSAN ON)
+endif()
+set(RAYLIB_WITH_PIC OFF)
+if(OPT_ENABLE_HARDENING OR ENABLE_ELF_PROTECTION)
+    set(RAYLIB_WITH_PIC ON)
+endif()
 set(RAYLIB_SUPPORT_TRACELOG OFF)
 if("${CMAKE_BUILD_TYPE}" MATCHES "Debug" OR "${CMAKE_BUILD_TYPE}" MATCHES "RelWithDebInfo")
     set(RAYLIB_SUPPORT_TRACELOG ON)
@@ -11,6 +27,9 @@ set(RAYLIB_SUPPORT_SCREEN_CAPTURE)
 if("${CMAKE_BUILD_TYPE}" MATCHES "Debug" OR "${CMAKE_BUILD_TYPE}" MATCHES "RelWithDebInfo")
     set(RAYLIB_SUPPORT_SCREEN_CAPTURE ON)
 endif()
+
+# use custom font, turn off default font ???
+set(RAYLIB_SUPPORT_DEFAULT_FONT ON)
 
 cpmaddpackage(
         NAME
@@ -23,10 +42,10 @@ cpmaddpackage(
         OPTIONS
         "BUILD_EXAMPLES OFF"
         "CUSTOMIZE_BUILD ON"
-        "ENABLE_ASAN OFF"
-        "ENABLE_UBSAN OFF"
-        "ENABLE_MSAN OFF"
-        "WITH_PIC OFF"
+        "ENABLE_ASAN ${RAYLIB_ENABLE_ASAN}"
+        "ENABLE_UBSAN ${RAYLIB_ENABLE_UBSAN}"
+        "ENABLE_MSAN ${RAYLIB_ENABLE_MSAN}"
+        "WITH_PIC ${RAYLIB_WITH_PIC}"
         "BUILD_SHARED_LIBS OFF"
         # raylib modules included
         "SUPPORT_MODULE_RSHAPES ON"
@@ -64,13 +83,14 @@ cpmaddpackage(
         "SUPPORT_FILEFORMAT_PKM OFF"
         "SUPPORT_FILEFORMAT_PVR OFF"
         "SUPPORT_FILEFORMAT_SVG OFF"
+        "SUPPORT_FILEFORMAT_DDS OFF"
         "SUPPORT_IMAGE_EXPORT ${RAYLIB_SUPPORT_SCREEN_CAPTURE}"
         "SUPPORT_IMAGE_GENERATION ON"
         "SUPPORT_IMAGE_MANIPULATION ON"
         # rtext.c
-        "SUPPORT_DEFAULT_FONT ON"
+        "SUPPORT_DEFAULT_FONT ${RAYLIB_SUPPORT_DEFAULT_FONT}"
         "SUPPORT_FILEFORMAT_FNT OFF"
-        "SUPPORT_FILEFORMAT_TTF OFF"
+        "SUPPORT_FILEFORMAT_TTF ON"
         "SUPPORT_TEXT_MANIPULATION ON"
         "SUPPORT_FONT_ATLAS_WHITE_REC ON"
         # rmodels.c
@@ -88,6 +108,7 @@ cpmaddpackage(
         "SUPPORT_FILEFORMAT_MP3 ${RAYLIB_SUPPORT_MODULE_RAUDIO}"
         "SUPPORT_FILEFORMAT_QOA OFF"
         "SUPPORT_FILEFORMAT_FLAC OFF"
+        "SUPPORT_FILEFORMAT_XM OFF"
         # utils.c
         "SUPPORT_STANDARD_FILEIO ON"
         "SUPPORT_TRACELOG ${RAYLIB_SUPPORT_TRACELOG}"
@@ -97,7 +118,9 @@ cpmaddpackage(
 #target_compile_options(raylib PRIVATE $<$<C_COMPILER_ID:GNU>:-Wno-stringop-overflow>)
 #target_compile_options(raylib PRIVATE $<$<C_COMPILER_ID:Clang>:-Wno-implicit-const-int-float-conversion>)
 target_compile_features(raylib PRIVATE c_std_99)
+target_disable_static_analysis(raylib)
 
 if("${PLATFORM}" STREQUAL "Desktop")
     target_compile_features(glfw PRIVATE c_std_99)
+    target_disable_static_analysis(glfw)
 endif()

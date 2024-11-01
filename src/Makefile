@@ -32,7 +32,7 @@ PLATFORM              ?= PLATFORM_DESKTOP
 PROJECT_NAME          ?= raylib_game
 PROJECT_VERSION       ?= 1.0
 PROJECT_BUILD_PATH    ?= .
-PROJECT_SOURCE_FILES  ?= raylib_game.cpp
+PROJECT_SOURCE_FILES  ?= main.cpp game.cpp start_scene.cpp main_scene.cpp end_scene.cpp
 
 # raylib library variables
 RAYLIB_SRC_PATH       ?= C:/raylib/raylib/src

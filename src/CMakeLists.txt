@@ -1,6 +1,6 @@
 add_executable(raylib_game)
 # @NOTE: add more source files here
-target_sources(raylib_game PRIVATE raylib_game.cpp)
+target_sources(raylib_game PRIVATE main.cpp game.cpp start_scene.cpp main_scene.cpp end_scene.cpp)
 target_compile_features(raylib_game PRIVATE cxx_std_20)
 target_link_libraries(raylib_game project_options project_options_no_exceptions project_options_no_rtti)
 
@@ -40,3 +40,5 @@ endif()
 set_target_properties(raylib_game PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 # set the startup project for the "play" button in MSVC
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT raylib_game)
+
+# @TODO: package application with PackageProject.cmake
