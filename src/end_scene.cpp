@@ -22,13 +22,13 @@ void RenderEndScene(GameContext& gameContext)
   DrawTexture(gameContext.logoTexture, ConnectorArea.x + ConnectorArea.width/2 - gameContext.logoTexture.width/2, ConnectorArea.y + 72, NeutralTintColor);
 
   // show welcome text
-  const auto endTextSize = MeasureTextEx(gameContext.font, EndText, EndTextFontSize, EndTextFontSize/10);
-  DrawTextEx(gameContext.font, EndText, {LevelArea.x + LevelArea.width/2 - endTextSize.x/2, LevelArea.y + 64}, EndTextFontSize, EndTextFontSize/10, TextFontColor);
+  const auto endTextSize = MeasureTextEx(gameContext.font, EndText, EndTextFontSize, EndTextFontSize/FontSpacingFactor);
+  DrawTextEx(gameContext.font, EndText, {LevelArea.x + LevelArea.width/2 - endTextSize.x/2, LevelArea.y + 64}, EndTextFontSize, EndTextFontSize/FontSpacingFactor, TextFontColor);
 
-  const auto startButtonTextSize = MeasureTextEx(gameContext.font, EndStartButtonText, StartButtonTextFontSize, StartButtonTextFontSize/10);
+  const auto startButtonTextSize = MeasureTextEx(gameContext.font, EndStartButtonText, StartButtonTextFontSize, StartButtonTextFontSize/FontSpacingFactor);
   const auto startButtonColor = (CheckCollisionRecs(StartButtonRect, gameContext.mouse)) ? ButtonHoverColor : ButtonColor;
   DrawRectangleLinesEx(StartButtonRect, ButtonLineThick, startButtonColor);
-  DrawTextEx(gameContext.font, EndStartButtonText, {StartButtonRect.x + StartButtonRect.width/2 - startButtonTextSize.x/2, StartButtonRect.y + StartButtonRect.height/2 - startButtonTextSize.y/2}, StartButtonTextFontSize, StartButtonTextFontSize/10, startButtonColor);
+  DrawTextEx(gameContext.font, EndStartButtonText, {StartButtonRect.x + StartButtonRect.width/2 - startButtonTextSize.x/2, StartButtonRect.y + StartButtonRect.height/2 - startButtonTextSize.y/2}, StartButtonTextFontSize, StartButtonTextFontSize/FontSpacingFactor, startButtonColor);
 
   DrawTexture(gameContext.endTexture, LevelArea.x + LevelArea.width/2 - EndSpriteWidth/2 - 25, LevelArea.y + LevelArea.height/2 - EndSpriteHeight/2 + 15, NeutralTintColor);
 }

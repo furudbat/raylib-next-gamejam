@@ -309,29 +309,29 @@ void RenderMainScene(GameContext& gameContext) {
     }
 
     // level text
-    const auto startButtonTextSize = MeasureTextEx(gameContext.font, gameContext.levelHelperText.c_str(), LevelHelperTextFontSize, LevelHelperTextFontSize/10);
-    DrawTextEx(gameContext.font, gameContext.levelHelperText.c_str(), {LevelArea.x + LevelArea.width/2 - startButtonTextSize.x/2, LevelArea.y + 8}, LevelHelperTextFontSize, LevelHelperTextFontSize/10, TextFontColor);
+    const auto startButtonTextSize = MeasureTextEx(gameContext.font, gameContext.levelHelperText.c_str(), LevelHelperTextFontSize, LevelHelperTextFontSize/FontSpacingFactor);
+    DrawTextEx(gameContext.font, gameContext.levelHelperText.c_str(), {LevelArea.x + LevelArea.width/2 - startButtonTextSize.x/2, LevelArea.y + 8}, LevelHelperTextFontSize, LevelHelperTextFontSize/FontSpacingFactor, TextFontColor);
 
     // helper text (connections, node info)
-    DrawTextEx(gameContext.font, gameContext.leftHelperText.c_str(), {LeftTextArea.x + 8, LeftTextArea.y + 8}, HelperTextFontSize, HelperTextFontSize/10, TextFontColor);
+    DrawTextEx(gameContext.font, gameContext.leftHelperText.c_str(), {LeftTextArea.x + 8, LeftTextArea.y + 8}, HelperTextFontSize, HelperTextFontSize/FontSpacingFactor, TextFontColor);
 
     // Main GO Button
     if (gameContext.state == GameState::NodesMain) {
-        const auto goButtonTextSize = MeasureTextEx(gameContext.font, GoButtonText, StartButtonTextFontSize, StartButtonTextFontSize/10);
+        const auto goButtonTextSize = MeasureTextEx(gameContext.font, GoButtonText, StartButtonTextFontSize, StartButtonTextFontSize/FontSpacingFactor);
         const auto buttonColor = (CheckCollisionRecs(GoButtonRect, gameContext.mouse)) ? ButtonHoverColor : ButtonColor;
         DrawRectangleLinesEx(GoButtonRect, ButtonLineThick, buttonColor);
-        DrawTextEx(gameContext.font, GoButtonText, {GoButtonRect.x + GoButtonRect.width/2 - goButtonTextSize.x/2, GoButtonRect.y + GoButtonRect.height/2 - goButtonTextSize.y/2}, StartButtonTextFontSize, StartButtonTextFontSize/10, buttonColor);
+        DrawTextEx(gameContext.font, GoButtonText, {GoButtonRect.x + GoButtonRect.width/2 - goButtonTextSize.x/2, GoButtonRect.y + GoButtonRect.height/2 - goButtonTextSize.y/2}, StartButtonTextFontSize, StartButtonTextFontSize/FontSpacingFactor, buttonColor);
     }
     // Character Reset Button
     if (gameContext.state == GameState::CharacterMain) {
-        const auto restartButtonTextSize = MeasureTextEx(gameContext.font, RestartButtonText, StartButtonTextFontSize, StartButtonTextFontSize/10);
+        const auto restartButtonTextSize = MeasureTextEx(gameContext.font, RestartButtonText, StartButtonTextFontSize, StartButtonTextFontSize/FontSpacingFactor);
         const auto buttonColor = (CheckCollisionRecs(ResetButtonRect, gameContext.mouse)) ? ButtonHoverColor : ButtonColor;
         DrawRectangleLinesEx(ResetButtonRect, ButtonLineThick, buttonColor);
-        DrawTextEx(gameContext.font, RestartButtonText, {ResetButtonRect.x + ResetButtonRect.width/2 - restartButtonTextSize.x/2, ResetButtonRect.y + GoButtonRect.height/2 - restartButtonTextSize.y/2}, StartButtonTextFontSize, StartButtonTextFontSize/10, buttonColor);
+        DrawTextEx(gameContext.font, RestartButtonText, {ResetButtonRect.x + ResetButtonRect.width/2 - restartButtonTextSize.x/2, ResetButtonRect.y + GoButtonRect.height/2 - restartButtonTextSize.y/2}, StartButtonTextFontSize, StartButtonTextFontSize/FontSpacingFactor, buttonColor);
     }
 
     // helper text (actions, key binds)
-    DrawTextEx(gameContext.font, gameContext.rightHelperText.c_str(), {RightHelperTextAreaRect.x, RightHelperTextAreaRect.y}, HelperTextFontSize, HelperTextFontSize/10, TextFontColor);
+    DrawTextEx(gameContext.font, gameContext.rightHelperText.c_str(), {RightHelperTextAreaRect.x, RightHelperTextAreaRect.y}, HelperTextFontSize, HelperTextFontSize/FontSpacingFactor, TextFontColor);
 
     renderMap(gameContext);
 
@@ -341,33 +341,33 @@ void RenderMainScene(GameContext& gameContext) {
         DrawTexture(gameContext.instruction2Texture, InGameHelpInstruction2Area.x, InGameHelpInstruction2Area.y, NeutralTintColor);
 
         // guidelines help icon
-        const auto help3TextSize = MeasureTextEx(gameContext.font, Help3TipString, SmallHelperTextFontSize, SmallHelperTextFontSize/10);
-        DrawTextEx(gameContext.font, Help3TipString, {Help3Area.x, Help3Area.y + Help3Area.height/2 - help3TextSize.y/2}, SmallHelperTextFontSize, SmallHelperTextFontSize/10, TextFontColor);
+        const auto help3TextSize = MeasureTextEx(gameContext.font, Help3TipString, SmallHelperTextFontSize, SmallHelperTextFontSize/FontSpacingFactor);
+        DrawTextEx(gameContext.font, Help3TipString, {Help3Area.x, Help3Area.y + Help3Area.height/2 - help3TextSize.y/2}, SmallHelperTextFontSize, SmallHelperTextFontSize/FontSpacingFactor, TextFontColor);
 
         // controls
         DrawRectangleRec(Help4Area, BackgroundColor);
         DrawRectangleLinesEx(Help4Area, BorderLineThick, BorderColor);
-        DrawTextEx(gameContext.font, Help4TipString, {Help4Area.x + 4, Help4Area.y + 4}, SmallHelperTextFontSize, SmallHelperTextFontSize/10, TextFontColor);
+        DrawTextEx(gameContext.font, Help4TipString, {Help4Area.x + 7, Help4Area.y + 4}, SmallHelperTextFontSize, SmallHelperTextFontSize/FontSpacingFactor, TextFontColor);
         //// controls icons
         DrawTexturePro(gameContext.iconsControlSpriteSheetTexture, { static_cast<int>(ControlIcons::LMB)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
-            {Help4Area.x + 5, Help4Area.y + 4 + 2*SmallHelperTextFontSize + 3, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
+            {Help4Area.x + 4, Help4Area.y + 4 + 2*SmallHelperTextFontSize + 3, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
         DrawTexturePro(gameContext.iconsControlSpriteSheetTexture, { static_cast<int>(ControlIcons::RMB)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
-            {Help4Area.x + 5, Help4Area.y + 4 + 3*SmallHelperTextFontSize + 5, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
+            {Help4Area.x + 4, Help4Area.y + 4 + 3*SmallHelperTextFontSize + 5, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
         DrawTexturePro(gameContext.iconsControlSpriteSheetTexture, { static_cast<int>(ControlIcons::Enter)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
-                {Help4Area.x + 5, Help4Area.y + 4 + 4*SmallHelperTextFontSize + 8, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
+                {Help4Area.x + 4, Help4Area.y + 4 + 4*SmallHelperTextFontSize + 8, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
         DrawTexturePro(gameContext.iconsControlSpriteSheetTexture, { static_cast<int>(ControlIcons::Backspace)*ControlIconSpriteWidth, 0, ControlIconSpriteWidth, ControlIconSpriteHeight },
-                {Help4Area.x + 5, Help4Area.y + 4 + 5*SmallHelperTextFontSize + 10, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
+                {Help4Area.x + 4, Help4Area.y + 4 + 5*SmallHelperTextFontSize + 10, ControlIconSpriteWidth, ControlIconSpriteHeight}, {0, 0}, 0, NeutralTintColor);
 
 
         // Tips
         DrawRectangleRec(Help5Area, BackgroundColor);
         DrawRectangleLinesEx(Help5Area, BorderLineThick, BorderColor);
-        DrawTextEx(gameContext.font, Help5TipString, {Help5Area.x + 4, Help5Area.y + 4}, SmallHelperTextFontSize, SmallHelperTextFontSize/10, TextFontColor);
+        DrawTextEx(gameContext.font, Help5TipString, {Help5Area.x + 4, Help5Area.y + 4}, SmallHelperTextFontSize, SmallHelperTextFontSize/FontSpacingFactor, TextFontColor);
     }
 
     // help icon 1
     {
-        const auto helpButtonTextSize = MeasureTextEx(gameContext.font, Help1IconString, HelpIconFontSize, HelpIconFontSize/10);
+        const auto helpButtonTextSize = MeasureTextEx(gameContext.font, Help1IconString, HelpIconFontSize, HelpIconFontSize/FontSpacingFactor);
         const auto buttonColor = [&]()
         {
             if (gameContext.showHelp1)
@@ -386,11 +386,11 @@ void RenderMainScene(GameContext& gameContext) {
         {
             DrawCircleLines(icon_pos_center.x, icon_pos_center.y, HelpIconRadius, buttonColor);
         }
-        DrawTextEx(gameContext.font, Help1IconString, {Help1IconArea.x + Help1IconArea.width/2 - helpButtonTextSize.x/2, Help1IconArea.y + Help1IconArea.height/2 - helpButtonTextSize.y/2}, HelpIconFontSize, HelpIconFontSize/10, buttonColor);
+        DrawTextEx(gameContext.font, Help1IconString, {Help1IconArea.x + Help1IconArea.width/2 - helpButtonTextSize.x/2, Help1IconArea.y + Help1IconArea.height/2 - helpButtonTextSize.y/2}, HelpIconFontSize, HelpIconFontSize/FontSpacingFactor, buttonColor);
     }
     // help icon 2
     {
-        const auto helpButtonTextSize = MeasureTextEx(gameContext.font, Help2IconString, HelpIconFontSize, HelpIconFontSize/10);
+        const auto helpButtonTextSize = MeasureTextEx(gameContext.font, Help2IconString, HelpIconFontSize, HelpIconFontSize/FontSpacingFactor);
         const auto buttonColor = [&]()
         {
             if (gameContext.showHelp2)
@@ -409,7 +409,7 @@ void RenderMainScene(GameContext& gameContext) {
         {
             DrawCircleLines(icon_pos_center.x, icon_pos_center.y, HelpIconRadius, buttonColor);
         }
-        DrawTextEx(gameContext.font, Help2IconString, {Help2IconArea.x + Help2IconArea.width/2 - helpButtonTextSize.x/2, Help2IconArea.y + Help2IconArea.height/2 - helpButtonTextSize.y/2}, HelpIconFontSize, HelpIconFontSize/10, buttonColor);
+        DrawTextEx(gameContext.font, Help2IconString, {Help2IconArea.x + Help2IconArea.width/2 - helpButtonTextSize.x/2, Help2IconArea.y + Help2IconArea.height/2 - helpButtonTextSize.y/2}, HelpIconFontSize, HelpIconFontSize/FontSpacingFactor, buttonColor);
     }
 }
 
@@ -786,7 +786,7 @@ void renderNode(GameContext& gameContext, const ConnectorNode& node)
             }
             return "";
         }();
-        const auto innerTextActionSize = MeasureTextEx(gameContext.font, innerTextAction, NodeFontSize, NodeFontSize/10);
+        const auto innerTextActionSize = MeasureTextEx(gameContext.font, innerTextAction, NodeFontSize, NodeFontSize/FontSpacingFactor);
 
         // draw background color on overlapping line
         DrawRing(node.data.position, 0, ActionNodeRadius, 0, 360, ActionNodeSides, BackgroundColor);
@@ -812,10 +812,10 @@ void renderNode(GameContext& gameContext, const ConnectorNode& node)
             {
                 if (node.is_selected)
                 {
-                    DrawTextEx(gameContext.font, innerTextAction, {node.data.position.x - innerTextActionSize.x/2, node.data.position.y - innerTextActionSize.y/2}, NodeFontSize, NodeFontSize/10, BackgroundColor);
+                    DrawTextEx(gameContext.font, innerTextAction, {node.data.position.x - innerTextActionSize.x/2, node.data.position.y - innerTextActionSize.y/2}, NodeFontSize, NodeFontSize/FontSpacingFactor, BackgroundColor);
                 } else
                 {
-                    DrawTextEx(gameContext.font,innerTextAction, {node.data.position.x - innerTextActionSize.x/2, node.data.position.y - innerTextActionSize.y/2}, NodeFontSize, NodeFontSize/10, actionColor);
+                    DrawTextEx(gameContext.font,innerTextAction, {node.data.position.x - innerTextActionSize.x/2, node.data.position.y - innerTextActionSize.y/2}, NodeFontSize, NodeFontSize/FontSpacingFactor, actionColor);
                 }
                 break;
             }
@@ -865,7 +865,7 @@ void renderNode(GameContext& gameContext, const ConnectorNode& node)
             }
             return "";
         }();
-        const auto innerTextKeySize = MeasureTextEx(gameContext.font, innerTextKey, NodeFontSize, NodeFontSize/10);
+        const auto innerTextKeySize = MeasureTextEx(gameContext.font, innerTextKey, NodeFontSize, NodeFontSize/FontSpacingFactor);
 
         // draw background color on overlapping line
         DrawRing(node.data.position, 0, KeyNodeRadius, 0, 360, 0, BackgroundColor);
@@ -888,10 +888,10 @@ void renderNode(GameContext& gameContext, const ConnectorNode& node)
         case ConnectorKey::G:
             if (node.is_selected)
             {
-                DrawTextEx(gameContext.font, innerTextKey, {node.data.position.x - innerTextKeySize.x/2, node.data.position.y - innerTextKeySize.y/2}, NodeFontSize, NodeFontSize/10, BackgroundColor);
+                DrawTextEx(gameContext.font, innerTextKey, {node.data.position.x - innerTextKeySize.x/2, node.data.position.y - innerTextKeySize.y/2}, NodeFontSize, NodeFontSize/FontSpacingFactor, BackgroundColor);
             } else
             {
-                DrawTextEx(gameContext.font, innerTextKey, {node.data.position.x - innerTextKeySize.x/2, node.data.position.y - innerTextKeySize.y/2}, NodeFontSize, NodeFontSize/10, keyColor);
+                DrawTextEx(gameContext.font, innerTextKey, {node.data.position.x - innerTextKeySize.x/2, node.data.position.y - innerTextKeySize.y/2}, NodeFontSize, NodeFontSize/FontSpacingFactor, keyColor);
             }
             break;
         }
@@ -1065,11 +1065,11 @@ void renderMap(GameContext& gameContext)
                             }
                             return "";
                         }();
-                        auto keyTextSize = MeasureTextEx(gameContext.font, keyText, PreviewTextFontSize, PreviewTextFontSize/10);
+                        auto keyTextSize = MeasureTextEx(gameContext.font, keyText, PreviewTextFontSize, PreviewTextFontSize/FontSpacingFactor);
                         Rectangle keyTextPos {startPosLine.x + direction_vector.x*keyTextSize.x/2 + PreviewLineThick+1, startPosLine.y + direction_vector.y*keyTextSize.y/8 + PreviewLineThick, keyTextSize.x, keyTextSize.y};
                         if (CheckCollisionRecs(keyTextPos, LevelMapArea))
                         {
-                            DrawTextEx(gameContext.font, keyText, {keyTextPos.x, keyTextPos.y}, PreviewTextFontSize, PreviewTextFontSize/10, PreviewLineColor);
+                            DrawTextEx(gameContext.font, keyText, {keyTextPos.x, keyTextPos.y}, PreviewTextFontSize, PreviewTextFontSize/FontSpacingFactor, PreviewLineColor);
                         }
                     }
                 }

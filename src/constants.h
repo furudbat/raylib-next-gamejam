@@ -121,6 +121,7 @@ inline constexpr auto ButtonColor = ColorPalette[2];
 inline constexpr auto ButtonHoverColor = ColorPalette[1];
 inline constexpr auto ButtonActiveColor = ColorPalette[5];
 inline constexpr int ButtonLineThick = 4;
+inline constexpr int FontSpacingFactor = 4;
 //// Start
 inline constexpr int TitleTextFontSize = 32;
 inline constexpr int SubTitleTextFontSize = 20;
@@ -269,8 +270,8 @@ and "Chain Length"
 )";
 inline constexpr const char* Help4TipString = R"(Controls:
 
-  on Neurons to connect
-  on Neurons to disconnect
-  quick start the level
-  quick reset the Level
+   on Neurons to connect
+   on Neurons to disconnect
+   quick start the level
+   quick reset the Level
 )";

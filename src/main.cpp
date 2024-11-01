@@ -81,8 +81,8 @@ int main(int /*argc*/, char** /*argv*/)
     /// @NOTE: use unique_ptr, init game context AFTER init window to avoid some init. fiasco ... (problems with font loading...) ???
     g_gameContext = std::make_unique<GameContext>();
 
-    g_gameContext->font = LoadFontEx("resources/MonaspaceArgon-ExtraBold.otf", 32, 0, 250);
-    //g_gameContext->font = GetFontDefault();
+    //g_gameContext->font = LoadFontEx("resources/MonaspaceArgon-ExtraBold.otf", 32, 0, 250);
+    g_gameContext->font = GetFontDefault();
 
     g_gameContext->logoTexture = LoadTexture("resources/logo.png");
     g_gameContext->instruction1Texture = LoadTexture("resources/instruction1.png");
